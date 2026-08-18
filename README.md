@@ -26,8 +26,7 @@ Official Repository: https://github.com/wlwlxks/RabbitMorph
 To build the mod JAR file on Windows:
 
 ```cmd
-cd /d E:\.RabbitMorph
-cmd /C "set JAVA_HOME=E:\java-1.8.0-openjdk-1.8.0.332-1.b09.ojdkbuild.windows.x86_64&&set PATH=E:\java-1.8.0-openjdk-1.8.0.332-1.b09.ojdkbuild.windows.x86_64\bin;%PATH%&&gradlew.bat clean build"
+gradlew.bat clean build
 ```
 
 The compiled output JAR will be generated at:
