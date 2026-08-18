@@ -87,37 +87,64 @@ public class ModelRabbitPlayer extends ModelBase {
         this.rabbitRightEye.setRotationPoint(0.0F, 16.0F, -1.0F);
     }
 
-    public void renderColored(float scale, int bodyR, int bodyG, int bodyB,
-                              int earR, int earG, int earB,
-                              int eyeR, int eyeG, int eyeB,
-                              int tailR, int tailG, int tailB) {
+    public void renderColoredDetailed(float scale,
+                                      float scaleHead, float scaleEar, float scaleBody, float scaleLegs, float scaleTail,
+                                      int bodyR, int bodyG, int bodyB, int bodyA,
+                                      int earR, int earG, int earB, int earA,
+                                      int eyeR, int eyeG, int eyeB, int eyeA,
+                                      int tailR, int tailG, int tailB, int tailA) {
 
-        // Render Body, Head, Legs
-        GlStateManager.color(bodyR / 255.0F, bodyG / 255.0F, bodyB / 255.0F, 1.0F);
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+
+        // Body
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scaleBody, scaleBody, scaleBody);
+        GlStateManager.color(bodyR / 255.0F, bodyG / 255.0F, bodyB / 255.0F, bodyA / 255.0F);
+        this.rabbitBody.render(scale);
+        GlStateManager.popMatrix();
+
+        // Head
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scaleHead, scaleHead, scaleHead);
+        GlStateManager.color(bodyR / 255.0F, bodyG / 255.0F, bodyB / 255.0F, bodyA / 255.0F);
+        this.rabbitHead.render(scale);
+        this.rabbitNose.render(scale);
+
+        // Eyes
+        GlStateManager.color(eyeR / 255.0F, eyeG / 255.0F, eyeB / 255.0F, eyeA / 255.0F);
+        this.rabbitLeftEye.render(scale);
+        this.rabbitRightEye.render(scale);
+        GlStateManager.popMatrix();
+
+        // Ears
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scaleEar, scaleEar, scaleEar);
+        GlStateManager.color(earR / 255.0F, earG / 255.0F, earB / 255.0F, earA / 255.0F);
+        this.rabbitRightEar.render(scale);
+        this.rabbitLeftEar.render(scale);
+        GlStateManager.popMatrix();
+
+        // Legs
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scaleLegs, scaleLegs, scaleLegs);
+        GlStateManager.color(bodyR / 255.0F, bodyG / 255.0F, bodyB / 255.0F, bodyA / 255.0F);
         this.rabbitLeftFoot.render(scale);
         this.rabbitRightFoot.render(scale);
         this.rabbitLeftThigh.render(scale);
         this.rabbitRightThigh.render(scale);
-        this.rabbitBody.render(scale);
         this.rabbitLeftArm.render(scale);
         this.rabbitRightArm.render(scale);
-        this.rabbitHead.render(scale);
-        this.rabbitNose.render(scale);
+        GlStateManager.popMatrix();
 
-        // Render Ears
-        GlStateManager.color(earR / 255.0F, earG / 255.0F, earB / 255.0F, 1.0F);
-        this.rabbitRightEar.render(scale);
-        this.rabbitLeftEar.render(scale);
-
-        // Render Eyes
-        GlStateManager.color(eyeR / 255.0F, eyeG / 255.0F, eyeB / 255.0F, 1.0F);
-        this.rabbitLeftEye.render(scale);
-        this.rabbitRightEye.render(scale);
-
-        // Render Tail
-        GlStateManager.color(tailR / 255.0F, tailG / 255.0F, tailB / 255.0F, 1.0F);
+        // Tail
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scaleTail, scaleTail, scaleTail);
+        GlStateManager.color(tailR / 255.0F, tailG / 255.0F, tailB / 255.0F, tailA / 255.0F);
         this.rabbitTail.render(scale);
+        GlStateManager.popMatrix();
 
+        GlStateManager.disableBlend();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 

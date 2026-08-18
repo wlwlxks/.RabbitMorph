@@ -38,7 +38,7 @@ Keybindings can be customized in Options -> Controls -> RabbitMorph:
 
 - **R**: Rabbit Morph (Toggle transformation)
 - **B**: Rabbit Settings (Open customization GUI)
-- **E**: Rabbit Interaction (Interact with player inventory when sneaking)
+- **I**: Rabbit Interaction (Interact with player inventory when sneaking)
 
 ## License
 

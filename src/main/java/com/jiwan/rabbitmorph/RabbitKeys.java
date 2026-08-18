@@ -16,7 +16,7 @@ public class RabbitKeys {
     public static void init() {
         keyToggleRabbit = new KeyBinding("key.rabbitmorph.toggle", Keyboard.KEY_R, "key.categories.rabbitmorph");
         keyOpenSettings = new KeyBinding("key.rabbitmorph.settings", Keyboard.KEY_B, "key.categories.rabbitmorph");
-        keyInteract = new KeyBinding("key.rabbitmorph.interact", Keyboard.KEY_E, "key.categories.rabbitmorph");
+        keyInteract = new KeyBinding("key.rabbitmorph.interact", Keyboard.KEY_I, "key.categories.rabbitmorph");
 
         ClientRegistry.registerKeyBinding(keyToggleRabbit);
         ClientRegistry.registerKeyBinding(keyOpenSettings);

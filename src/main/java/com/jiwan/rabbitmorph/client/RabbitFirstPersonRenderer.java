@@ -3,7 +3,6 @@ package com.jiwan.rabbitmorph.client;
 import com.jiwan.rabbitmorph.RabbitData;
 import com.jiwan.rabbitmorph.model.ModelRabbitHands;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -25,22 +24,27 @@ public class RabbitFirstPersonRenderer {
 
         if (!RabbitData.isRabbit(player)) return;
 
-        // Hide normal human hand
         event.setCanceled(true);
 
         GlStateManager.pushMatrix();
+        GlStateManager.enableDepth();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(RABBIT_TEXTURE);
 
         int bodyR = RabbitData.color(player, "body", "R");
         int bodyG = RabbitData.color(player, "body", "G");
         int bodyB = RabbitData.color(player, "body", "B");
+        int bodyA = RabbitData.color(player, "body", "A");
 
         float swingProgress = player.getSwingProgress(event.partialTicks);
         float ticksExisted = player.ticksExisted + event.partialTicks;
 
         this.handsModel.renderHands(swingProgress, 0.0F, ticksExisted, bodyR, bodyG, bodyB);
 
+        GlStateManager.disableBlend();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();
     }
 }

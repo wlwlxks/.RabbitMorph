@@ -16,18 +16,14 @@ public class PacketSyncRabbitData implements IMessage {
     private UUID playerUUID;
     private boolean isRabbit;
     private String type;
-    private double health;
-    private double speed;
-    private double jump;
-    private double fall;
+    private double health, speed, jump, fall;
+    private float scaleOverall, scaleHead, scaleEar, scaleBody, scaleLegs, scaleTail;
+    private int bodyR, bodyG, bodyB, bodyA;
+    private int earR, earG, earB, earA;
+    private int eyeR, eyeG, eyeB, eyeA;
+    private int tailR, tailG, tailB, tailA;
 
-    private int bodyR, bodyG, bodyB;
-    private int earR, earG, earB;
-    private int eyeR, eyeG, eyeB;
-    private int tailR, tailG, tailB;
-
-    public PacketSyncRabbitData() {
-    }
+    public PacketSyncRabbitData() {}
 
     public static PacketSyncRabbitData createForPlayer(EntityPlayer player) {
         PacketSyncRabbitData pkt = new PacketSyncRabbitData();
@@ -39,21 +35,17 @@ public class PacketSyncRabbitData implements IMessage {
         pkt.jump = RabbitData.getJump(player);
         pkt.fall = RabbitData.getFallDamage(player);
 
-        pkt.bodyR = RabbitData.color(player, "body", "R");
-        pkt.bodyG = RabbitData.color(player, "body", "G");
-        pkt.bodyB = RabbitData.color(player, "body", "B");
+        pkt.scaleOverall = RabbitData.getScale(player, "overall");
+        pkt.scaleHead = RabbitData.getScale(player, "head");
+        pkt.scaleEar = RabbitData.getScale(player, "ear");
+        pkt.scaleBody = RabbitData.getScale(player, "body");
+        pkt.scaleLegs = RabbitData.getScale(player, "legs");
+        pkt.scaleTail = RabbitData.getScale(player, "tail");
 
-        pkt.earR = RabbitData.color(player, "ear", "R");
-        pkt.earG = RabbitData.color(player, "ear", "G");
-        pkt.earB = RabbitData.color(player, "ear", "B");
-
-        pkt.eyeR = RabbitData.color(player, "eye", "R");
-        pkt.eyeG = RabbitData.color(player, "eye", "G");
-        pkt.eyeB = RabbitData.color(player, "eye", "B");
-
-        pkt.tailR = RabbitData.color(player, "tail", "R");
-        pkt.tailG = RabbitData.color(player, "tail", "G");
-        pkt.tailB = RabbitData.color(player, "tail", "B");
+        pkt.bodyR = RabbitData.color(player, "body", "R"); pkt.bodyG = RabbitData.color(player, "body", "G"); pkt.bodyB = RabbitData.color(player, "body", "B"); pkt.bodyA = RabbitData.color(player, "body", "A");
+        pkt.earR = RabbitData.color(player, "ear", "R"); pkt.earG = RabbitData.color(player, "ear", "G"); pkt.earB = RabbitData.color(player, "ear", "B"); pkt.earA = RabbitData.color(player, "ear", "A");
+        pkt.eyeR = RabbitData.color(player, "eye", "R"); pkt.eyeG = RabbitData.color(player, "eye", "G"); pkt.eyeB = RabbitData.color(player, "eye", "B"); pkt.eyeA = RabbitData.color(player, "eye", "A");
+        pkt.tailR = RabbitData.color(player, "tail", "R"); pkt.tailG = RabbitData.color(player, "tail", "G"); pkt.tailB = RabbitData.color(player, "tail", "B"); pkt.tailA = RabbitData.color(player, "tail", "A");
 
         return pkt;
     }
@@ -65,15 +57,13 @@ public class PacketSyncRabbitData implements IMessage {
         this.playerUUID = new UUID(most, least);
         this.isRabbit = buf.readBoolean();
         this.type = ByteBufUtils.readUTF8String(buf);
-        this.health = buf.readDouble();
-        this.speed = buf.readDouble();
-        this.jump = buf.readDouble();
-        this.fall = buf.readDouble();
-
-        this.bodyR = buf.readInt(); this.bodyG = buf.readInt(); this.bodyB = buf.readInt();
-        this.earR = buf.readInt(); this.earG = buf.readInt(); this.earB = buf.readInt();
-        this.eyeR = buf.readInt(); this.eyeG = buf.readInt(); this.eyeB = buf.readInt();
-        this.tailR = buf.readInt(); this.tailG = buf.readInt(); this.tailB = buf.readInt();
+        this.health = buf.readDouble(); this.speed = buf.readDouble(); this.jump = buf.readDouble(); this.fall = buf.readDouble();
+        this.scaleOverall = buf.readFloat(); this.scaleHead = buf.readFloat(); this.scaleEar = buf.readFloat();
+        this.scaleBody = buf.readFloat(); this.scaleLegs = buf.readFloat(); this.scaleTail = buf.readFloat();
+        this.bodyR = buf.readInt(); this.bodyG = buf.readInt(); this.bodyB = buf.readInt(); this.bodyA = buf.readInt();
+        this.earR = buf.readInt(); this.earG = buf.readInt(); this.earB = buf.readInt(); this.earA = buf.readInt();
+        this.eyeR = buf.readInt(); this.eyeG = buf.readInt(); this.eyeB = buf.readInt(); this.eyeA = buf.readInt();
+        this.tailR = buf.readInt(); this.tailG = buf.readInt(); this.tailB = buf.readInt(); this.tailA = buf.readInt();
     }
 
     @Override
@@ -82,15 +72,13 @@ public class PacketSyncRabbitData implements IMessage {
         buf.writeLong(this.playerUUID.getLeastSignificantBits());
         buf.writeBoolean(this.isRabbit);
         ByteBufUtils.writeUTF8String(buf, this.type != null ? this.type : "");
-        buf.writeDouble(this.health);
-        buf.writeDouble(this.speed);
-        buf.writeDouble(this.jump);
-        buf.writeDouble(this.fall);
-
-        buf.writeInt(this.bodyR); buf.writeInt(this.bodyG); buf.writeInt(this.bodyB);
-        buf.writeInt(this.earR); buf.writeInt(this.earG); buf.writeInt(this.earB);
-        buf.writeInt(this.eyeR); buf.writeInt(this.eyeG); buf.writeInt(this.eyeB);
-        buf.writeInt(this.tailR); buf.writeInt(this.tailG); buf.writeInt(this.tailB);
+        buf.writeDouble(this.health); buf.writeDouble(this.speed); buf.writeDouble(this.jump); buf.writeDouble(this.fall);
+        buf.writeFloat(this.scaleOverall); buf.writeFloat(this.scaleHead); buf.writeFloat(this.scaleEar);
+        buf.writeFloat(this.scaleBody); buf.writeFloat(this.scaleLegs); buf.writeFloat(this.scaleTail);
+        buf.writeInt(this.bodyR); buf.writeInt(this.bodyG); buf.writeInt(this.bodyB); buf.writeInt(this.bodyA);
+        buf.writeInt(this.earR); buf.writeInt(this.earG); buf.writeInt(this.earB); buf.writeInt(this.earA);
+        buf.writeInt(this.eyeR); buf.writeInt(this.eyeG); buf.writeInt(this.eyeB); buf.writeInt(this.eyeA);
+        buf.writeInt(this.tailR); buf.writeInt(this.tailG); buf.writeInt(this.tailB); buf.writeInt(this.tailA);
     }
 
     public static class Handler implements IMessageHandler<PacketSyncRabbitData, IMessage> {
@@ -104,10 +92,11 @@ public class PacketSyncRabbitData implements IMessage {
 
                     RabbitData.syncClientCache(message.playerUUID, message.isRabbit, message.type,
                             message.health, message.speed, message.jump, message.fall,
-                            message.bodyR, message.bodyG, message.bodyB,
-                            message.earR, message.earG, message.earB,
-                            message.eyeR, message.eyeG, message.eyeB,
-                            message.tailR, message.tailG, message.tailB);
+                            message.scaleOverall, message.scaleHead, message.scaleEar, message.scaleBody, message.scaleLegs, message.scaleTail,
+                            message.bodyR, message.bodyG, message.bodyB, message.bodyA,
+                            message.earR, message.earG, message.earB, message.earA,
+                            message.eyeR, message.eyeG, message.eyeB, message.eyeA,
+                            message.tailR, message.tailG, message.tailB, message.tailA);
 
                     if (clientPlayer != null) {
                         RabbitData.setRabbit(clientPlayer, message.isRabbit);
@@ -117,10 +106,17 @@ public class PacketSyncRabbitData implements IMessage {
                         RabbitData.setJump(clientPlayer, message.jump);
                         RabbitData.setFallDamage(clientPlayer, message.fall);
 
-                        RabbitData.setColor(clientPlayer, "body", message.bodyR, message.bodyG, message.bodyB);
-                        RabbitData.setColor(clientPlayer, "ear", message.earR, message.earG, message.earB);
-                        RabbitData.setColor(clientPlayer, "eye", message.eyeR, message.eyeG, message.eyeB);
-                        RabbitData.setColor(clientPlayer, "tail", message.tailR, message.tailG, message.tailB);
+                        RabbitData.setScale(clientPlayer, "overall", message.scaleOverall);
+                        RabbitData.setScale(clientPlayer, "head", message.scaleHead);
+                        RabbitData.setScale(clientPlayer, "ear", message.scaleEar);
+                        RabbitData.setScale(clientPlayer, "body", message.scaleBody);
+                        RabbitData.setScale(clientPlayer, "legs", message.scaleLegs);
+                        RabbitData.setScale(clientPlayer, "tail", message.scaleTail);
+
+                        RabbitData.setColorRGBA(clientPlayer, "body", message.bodyR, message.bodyG, message.bodyB, message.bodyA);
+                        RabbitData.setColorRGBA(clientPlayer, "ear", message.earR, message.earG, message.earB, message.earA);
+                        RabbitData.setColorRGBA(clientPlayer, "eye", message.eyeR, message.eyeG, message.eyeB, message.eyeA);
+                        RabbitData.setColorRGBA(clientPlayer, "tail", message.tailR, message.tailG, message.tailB, message.tailA);
                     }
                 }
             });

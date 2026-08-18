@@ -26,7 +26,6 @@ public class RabbitRenderer {
 
         if (!RabbitData.isRabbit(player)) return;
 
-        // Cancel default human player rendering
         event.setCanceled(true);
 
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
@@ -47,35 +46,33 @@ public class RabbitRenderer {
         float scaleFactor = RabbitTransform.getScaleFactor(player);
         if (scaleFactor <= 0.0F) scaleFactor = 1.0F;
 
+        float overallScale = RabbitData.getScale(player, "overall");
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, z);
         GlStateManager.rotate(180.0F - renderYaw, 0.0F, 1.0F, 0.0F);
+        GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
 
-        // Adjust scale for rabbit size & transition animation
-        float rabbitScale = 0.65F * scaleFactor;
+        float rabbitScale = 0.65F * scaleFactor * overallScale;
         GlStateManager.scale(rabbitScale, rabbitScale, rabbitScale);
-        GlStateManager.translate(0.0F, 1.35F, 0.0F);
+        GlStateManager.translate(0.0F, -1.5F, 0.0F);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(RABBIT_TEXTURE);
 
-        int bodyR = RabbitData.color(player, "body", "R");
-        int bodyG = RabbitData.color(player, "body", "G");
-        int bodyB = RabbitData.color(player, "body", "B");
+        float sHead = RabbitData.getScale(player, "head");
+        float sEar = RabbitData.getScale(player, "ear");
+        float sBody = RabbitData.getScale(player, "body");
+        float sLegs = RabbitData.getScale(player, "legs");
+        float sTail = RabbitData.getScale(player, "tail");
 
-        int earR = RabbitData.color(player, "ear", "R");
-        int earG = RabbitData.color(player, "ear", "G");
-        int earB = RabbitData.color(player, "ear", "B");
-
-        int eyeR = RabbitData.color(player, "eye", "R");
-        int eyeG = RabbitData.color(player, "eye", "G");
-        int eyeB = RabbitData.color(player, "eye", "B");
-
-        int tailR = RabbitData.color(player, "tail", "R");
-        int tailG = RabbitData.color(player, "tail", "G");
-        int tailB = RabbitData.color(player, "tail", "B");
+        int bR = RabbitData.color(player, "body", "R"), bG = RabbitData.color(player, "body", "G"), bB = RabbitData.color(player, "body", "B"), bA = RabbitData.color(player, "body", "A");
+        int eR = RabbitData.color(player, "ear", "R"), eG = RabbitData.color(player, "ear", "G"), eB = RabbitData.color(player, "ear", "B"), eA = RabbitData.color(player, "ear", "A");
+        int eyR = RabbitData.color(player, "eye", "R"), eyG = RabbitData.color(player, "eye", "G"), eyB = RabbitData.color(player, "eye", "B"), eyA = RabbitData.color(player, "eye", "A");
+        int tR = RabbitData.color(player, "tail", "R"), tG = RabbitData.color(player, "tail", "G"), tB = RabbitData.color(player, "tail", "B"), tA = RabbitData.color(player, "tail", "A");
 
         this.rabbitModel.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, headYaw, rotationPitch, 0.0625F, player);
-        this.rabbitModel.renderColored(0.0625F, bodyR, bodyG, bodyB, earR, earG, earB, eyeR, eyeG, eyeB, tailR, tailG, tailB);
+        this.rabbitModel.renderColoredDetailed(0.0625F, sHead, sEar, sBody, sLegs, sTail,
+                bR, bG, bB, bA, eR, eG, eB, eA, eyR, eyG, eyB, eyA, tR, tG, tB, tA);
 
         GlStateManager.popMatrix();
     }

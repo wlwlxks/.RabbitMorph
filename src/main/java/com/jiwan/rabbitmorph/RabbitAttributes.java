@@ -36,6 +36,10 @@ public class RabbitAttributes {
                 player.setHealth((float) targetHealth);
             }
         }
+
+        // Set rabbit size (width 0.4F, height 0.5F) & eye height
+        RabbitUtils.setEntitySize(player, 0.4F, 0.5F);
+        player.eyeHeight = 0.45F;
     }
 
     public static void removeAttributes(EntityPlayer player) {
@@ -56,5 +60,9 @@ public class RabbitAttributes {
                 player.setHealth(20.0F);
             }
         }
+
+        // Restore normal human player size (width 0.6F, height 1.8F) & eye height
+        RabbitUtils.setEntitySize(player, 0.6F, 1.8F);
+        player.eyeHeight = player.getDefaultEyeHeight();
     }
 }

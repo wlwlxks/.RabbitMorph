@@ -74,4 +74,22 @@ public class RabbitUtils {
         }
         return closestPlayer;
     }
+
+    public static void setEntitySize(Entity entity, float width, float height) {
+        if (entity == null) return;
+        try {
+            java.lang.reflect.Method m = net.minecraftforge.fml.relauncher.ReflectionHelper.findMethod(
+                    Entity.class, entity, new String[]{"setSize", "func_70105_a"}, float.class, float.class);
+            if (m != null) {
+                m.invoke(entity, width, height);
+            }
+        } catch (Exception e) {
+            entity.width = width;
+            entity.height = height;
+            double d0 = (double) width / 2.0D;
+            entity.setEntityBoundingBox(new AxisAlignedBB(
+                    entity.posX - d0, entity.posY, entity.posZ - d0,
+                    entity.posX + d0, entity.posY + (double) height, entity.posZ + d0));
+        }
+    }
 }

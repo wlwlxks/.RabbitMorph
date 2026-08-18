@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -67,6 +68,30 @@ public class RabbitHandler {
             PacketHandler.INSTANCE.sendToAllAround(syncPacket,
                     new net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint(
                             player.dimension, player.posX, player.posY, player.posZ, 128.0D));
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START && event.player != null) {
+            if (RabbitData.isRabbit(event.player)) {
+                float overallScale = RabbitData.getScale(event.player, "overall");
+                float targetWidth = 0.4F * overallScale;
+                float targetHeight = 0.5F * overallScale;
+                RabbitUtils.setEntitySize(event.player, targetWidth, targetHeight);
+                event.player.eyeHeight = 0.45F * overallScale;
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onLivingJump(LivingEvent.LivingJumpEvent event) {
+        if (event.entityLiving instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) event.entityLiving;
+            if (RabbitData.isRabbit(player)) {
+                double customJump = RabbitData.getJump(player);
+                event.entityLiving.motionY = customJump;
+            }
         }
     }
 

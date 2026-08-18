@@ -19,6 +19,8 @@ gui.rabbitmorph.apply=Apply
 gui.rabbitmorph.cancel=Cancel
 gui.rabbitmorph.reset=Reset Default
 gui.rabbitmorph.reset_preview=Reset View
+gui.rabbitmorph.save_json=Save JSON
+gui.rabbitmorph.load_json=Load JSON
 
 # Presets
 gui.rabbitmorph.preset.normal=Normal
