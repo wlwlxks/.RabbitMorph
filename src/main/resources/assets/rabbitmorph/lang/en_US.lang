@@ -1,0 +1,33 @@
+# Keybindings
+key.categories.rabbitmorph=RabbitMorph
+key.rabbitmorph.toggle=Rabbit Morph
+key.rabbitmorph.settings=Rabbit Settings
+key.rabbitmorph.interact=Rabbit Interaction
+
+# GUI Strings
+gui.rabbitmorph.title=Rabbit Morph Settings
+gui.rabbitmorph.type=Rabbit Type:
+gui.rabbitmorph.health=Health:
+gui.rabbitmorph.speed=Speed:
+gui.rabbitmorph.jump=Jump:
+gui.rabbitmorph.fall=Fall Multiplier:
+gui.rabbitmorph.body_color=Body RGB:
+gui.rabbitmorph.ear_color=Ear RGB:
+gui.rabbitmorph.eye_color=Eye RGB:
+gui.rabbitmorph.tail_color=Tail RGB:
+gui.rabbitmorph.apply=Apply
+gui.rabbitmorph.cancel=Cancel
+gui.rabbitmorph.reset=Reset Default
+gui.rabbitmorph.reset_preview=Reset View
+
+# Presets
+gui.rabbitmorph.preset.normal=Normal
+gui.rabbitmorph.preset.brown=Brown
+gui.rabbitmorph.preset.black=Black
+gui.rabbitmorph.preset.white=White
+gui.rabbitmorph.preset.golden=Golden
+
+# Chat / System Messages
+msg.rabbitmorph.cannot_interact_rabbit=Rabbit players cannot open each other's inventory!
+msg.rabbitmorph.must_be_rabbit=You must be a rabbit to interact!
+msg.rabbitmorph.no_target=No player targeted for interaction.

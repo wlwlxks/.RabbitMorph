@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "rabbitmorph",
+  "name": "RabbitMorph",
+  "description": "A highly customizable rabbit morph mod for Minecraft Forge 1.8.9 using the vanilla Minecraft rabbit model, featuring transformation effects, customizable rabbit types, colors, statistics, animated rendering, first-person rabbit paws, a live 360-degree preview, configurable controls, and multiplayer-safe inventory interaction.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "https://github.com/wlwlxks/RabbitMorph",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["Jiwan"],
+  "credits": "Jiwan",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
