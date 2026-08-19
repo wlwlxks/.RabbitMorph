@@ -7,9 +7,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 public class RabbitConfig {
     public static final String TYPE_NORMAL = "Normal";
@@ -80,12 +82,18 @@ public class RabbitConfig {
         return dir;
     }
 
-    public static String saveJsonConfig(RabbitConfigData data) {
+    public static String saveJsonConfigWithName(String rawName, RabbitConfigData data) {
         try {
             File dir = getConfigDir();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            String filename = "rabbitmorph_" + sdf.format(new Date()) + ".json";
-            File configFile = new File(dir, filename);
+            String cleanName = rawName != null ? rawName.replaceAll("[^a-zA-Z0-9_\\-]", "_").trim() : "";
+            if (cleanName.isEmpty()) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                cleanName = "rabbit_preset_" + sdf.format(new Date());
+            }
+            if (!cleanName.endsWith(".json")) {
+                cleanName += ".json";
+            }
+            File configFile = new File(dir, cleanName);
 
             FileWriter writer = new FileWriter(configFile);
             GSON.toJson(data, writer);
@@ -97,7 +105,12 @@ public class RabbitConfig {
         }
     }
 
-    public static RabbitConfigData loadLatestJsonConfig() {
+    public static String saveJsonConfig(RabbitConfigData data) {
+        return saveJsonConfigWithName(null, data);
+    }
+
+    public static List<File> listSavedJsonConfigs() {
+        List<File> list = new ArrayList<File>();
         try {
             File dir = getConfigDir();
             File[] files = dir.listFiles();
@@ -105,20 +118,45 @@ public class RabbitConfig {
                 Arrays.sort(files, new Comparator<File>() {
                     @Override
                     public int compare(File f1, File f2) {
-                        return Long.compare(f2.lastModified(), f1.lastModified()); // Latest first
+                        return Long.compare(f2.lastModified(), f1.lastModified()); // Newest first
                     }
                 });
                 for (File f : files) {
-                    if (f.getName().endsWith(".json")) {
-                        FileReader reader = new FileReader(f);
-                        RabbitConfigData data = GSON.fromJson(reader, RabbitConfigData.class);
-                        reader.close();
-                        if (data != null) return data;
+                    if (f.isFile() && f.getName().toLowerCase().endsWith(".json")) {
+                        list.add(f);
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return list;
+    }
+
+    public static RabbitConfigData loadJsonConfigFromFile(File file) {
+        if (file == null || !file.exists()) return null;
+        try {
+            FileReader reader = new FileReader(file);
+            RabbitConfigData data = GSON.fromJson(reader, RabbitConfigData.class);
+            reader.close();
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static boolean deleteJsonConfig(File file) {
+        if (file != null && file.exists()) {
+            return file.delete();
+        }
+        return false;
+    }
+
+    public static RabbitConfigData loadLatestJsonConfig() {
+        List<File> files = listSavedJsonConfigs();
+        if (!files.isEmpty()) {
+            return loadJsonConfigFromFile(files.get(0));
         }
         return new RabbitConfigData();
     }

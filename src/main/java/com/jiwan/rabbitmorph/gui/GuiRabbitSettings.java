@@ -159,16 +159,64 @@ public class GuiRabbitSettings extends GuiScreen {
                 this.tabStats.fieldStep.setText("0.6");
                 this.tabStats.fieldKnockback.setText("0.0");
                 break;
-            case 13: // Save JSON config
-                saveJsonConfig();
+            case 13: // Open Save Dialog
+                this.mc.displayGuiScreen(new GuiSaveConfigDialog(this, getCurrentConfigData()));
                 break;
-            case 14: // Load JSON config
-                loadJsonConfig();
+            case 14: // Open Load Dialog
+                this.mc.displayGuiScreen(new GuiLoadConfigDialog(this));
                 break;
         }
     }
 
+    public RabbitConfig.RabbitConfigData getCurrentConfigData() {
+        RabbitConfig.RabbitConfigData data = new RabbitConfig.RabbitConfigData();
+        data.type = this.tabPresets.selectedType;
+        data.isGlowing = this.tabEffects.isGlowing;
+        data.health = tabStats.getHealth();
+        data.speed = tabStats.getSpeed();
+        data.jump = tabStats.getJump();
+        data.fall = tabStats.getFall();
+
+        data.scaleOverall = tabScales.getScaleOverall();
+        data.scaleHead = tabScales.getScaleHead();
+        data.scaleEar = tabScales.getScaleEar();
+        data.scaleBody = tabScales.getScaleBody();
+        data.scaleLegs = tabScales.getScaleLegs();
+        data.scaleTail = tabScales.getScaleTail();
+
+        data.bodyR = tabColors.pickerBody.getR(); data.bodyG = tabColors.pickerBody.getG(); data.bodyB = tabColors.pickerBody.getB(); data.bodyA = tabColors.pickerBody.getA();
+        data.earR = tabColors.pickerEar.getR(); data.earG = tabColors.pickerEar.getG(); data.earB = tabColors.pickerEar.getB(); data.earA = tabColors.pickerEar.getA();
+        data.eyeR = tabColors.pickerEye.getR(); data.eyeG = tabColors.pickerEye.getG(); data.eyeB = tabColors.pickerEye.getB(); data.eyeA = tabColors.pickerEye.getA();
+        data.tailR = tabColors.pickerTail.getR(); data.tailG = tabColors.pickerTail.getG(); data.tailB = tabColors.pickerTail.getB(); data.tailA = tabColors.pickerTail.getA();
+        return data;
+    }
+
+    public void populateFromConfigData(RabbitConfig.RabbitConfigData data) {
+        if (data != null) {
+            this.tabPresets.selectedType = data.type != null ? data.type : RabbitConfig.TYPE_NORMAL;
+            this.tabEffects.isGlowing = data.isGlowing;
+
+            this.tabStats.fieldHealth.setText(String.valueOf(data.health));
+            this.tabStats.fieldSpeed.setText(String.valueOf(data.speed));
+            this.tabStats.fieldJump.setText(String.valueOf(data.jump));
+            this.tabStats.fieldFall.setText(String.valueOf(data.fall));
+
+            this.tabScales.fieldScaleOverall.setText(String.valueOf(data.scaleOverall));
+            this.tabScales.fieldScaleHead.setText(String.valueOf(data.scaleHead));
+            this.tabScales.fieldScaleEar.setText(String.valueOf(data.scaleEar));
+            this.tabScales.fieldScaleBody.setText(String.valueOf(data.scaleBody));
+            this.tabScales.fieldScaleLegs.setText(String.valueOf(data.scaleLegs));
+            this.tabScales.fieldScaleTail.setText(String.valueOf(data.scaleTail));
+
+            this.tabColors.pickerBody.setRGBA(data.bodyR, data.bodyG, data.bodyB, data.bodyA);
+            this.tabColors.pickerEar.setRGBA(data.earR, data.earG, data.earB, data.earA);
+            this.tabColors.pickerEye.setRGBA(data.eyeR, data.eyeG, data.eyeB, data.eyeA);
+            this.tabColors.pickerTail.setRGBA(data.tailR, data.tailG, data.tailB, data.tailA);
+        }
+    }
+
     private void selectPreset(String type) {
+        this.tabPresets.selectedType = type;
         if (RabbitConfig.TYPE_NORMAL.equals(type)) {
             tabColors.setPresetColors(RabbitConfig.NORMAL_BODY_R, RabbitConfig.NORMAL_BODY_G, RabbitConfig.NORMAL_BODY_B,
                     RabbitConfig.NORMAL_EAR_R, RabbitConfig.NORMAL_EAR_G, RabbitConfig.NORMAL_EAR_B,
@@ -197,54 +245,6 @@ public class GuiRabbitSettings extends GuiScreen {
         }
     }
 
-    private void saveJsonConfig() {
-        RabbitConfig.RabbitConfigData data = new RabbitConfig.RabbitConfigData();
-        data.type = this.tabPresets.selectedType;
-        data.isGlowing = this.tabEffects.isGlowing;
-        data.health = tabStats.getHealth();
-        data.speed = tabStats.getSpeed();
-        data.jump = tabStats.getJump();
-        data.fall = tabStats.getFall();
-
-        data.scaleOverall = tabScales.getScaleOverall();
-        data.scaleHead = tabScales.getScaleHead();
-        data.scaleEar = tabScales.getScaleEar();
-        data.scaleBody = tabScales.getScaleBody();
-        data.scaleLegs = tabScales.getScaleLegs();
-        data.scaleTail = tabScales.getScaleTail();
-
-        data.bodyR = tabColors.pickerBody.getR(); data.bodyG = tabColors.pickerBody.getG(); data.bodyB = tabColors.pickerBody.getB(); data.bodyA = tabColors.pickerBody.getA();
-        data.earR = tabColors.pickerEar.getR(); data.earG = tabColors.pickerEar.getG(); data.earB = tabColors.pickerEar.getB(); data.earA = tabColors.pickerEar.getA();
-        data.eyeR = tabColors.pickerEye.getR(); data.eyeG = tabColors.pickerEye.getG(); data.eyeB = tabColors.pickerEye.getB(); data.eyeA = tabColors.pickerEye.getA();
-        data.tailR = tabColors.pickerTail.getR(); data.tailG = tabColors.pickerTail.getG(); data.tailB = tabColors.pickerTail.getB(); data.tailA = tabColors.pickerTail.getA();
-
-        RabbitConfig.saveJsonConfig(data);
-    }
-
-    private void loadJsonConfig() {
-        RabbitConfig.RabbitConfigData data = RabbitConfig.loadLatestJsonConfig();
-        if (data != null) {
-            this.tabPresets.selectedType = data.type != null ? data.type : RabbitConfig.TYPE_NORMAL;
-            this.tabEffects.isGlowing = data.isGlowing;
-            this.tabStats.fieldHealth.setText(String.valueOf(data.health));
-            this.tabStats.fieldSpeed.setText(String.valueOf(data.speed));
-            this.tabStats.fieldJump.setText(String.valueOf(data.jump));
-            this.tabStats.fieldFall.setText(String.valueOf(data.fall));
-
-            this.tabScales.fieldScaleOverall.setText(String.valueOf(data.scaleOverall));
-            this.tabScales.fieldScaleHead.setText(String.valueOf(data.scaleHead));
-            this.tabScales.fieldScaleEar.setText(String.valueOf(data.scaleEar));
-            this.tabScales.fieldScaleBody.setText(String.valueOf(data.scaleBody));
-            this.tabScales.fieldScaleLegs.setText(String.valueOf(data.scaleLegs));
-            this.tabScales.fieldScaleTail.setText(String.valueOf(data.scaleTail));
-
-            this.tabColors.pickerBody.setRGBA(data.bodyR, data.bodyG, data.bodyB, data.bodyA);
-            this.tabColors.pickerEar.setRGBA(data.earR, data.earG, data.earB, data.earA);
-            this.tabColors.pickerEye.setRGBA(data.eyeR, data.eyeG, data.eyeB, data.eyeA);
-            this.tabColors.pickerTail.setRGBA(data.tailR, data.tailG, data.tailB, data.tailA);
-        }
-    }
-
     private void applySettings() {
         PacketRabbitSettings pkt = new PacketRabbitSettings(
                 this.tabPresets.selectedType, this.tabEffects.isGlowing,
@@ -257,7 +257,7 @@ public class GuiRabbitSettings extends GuiScreen {
         );
         PacketHandler.INSTANCE.sendToServer(pkt);
 
-        saveJsonConfig();
+        RabbitConfig.saveJsonConfig(getCurrentConfigData());
     }
 
     @Override
