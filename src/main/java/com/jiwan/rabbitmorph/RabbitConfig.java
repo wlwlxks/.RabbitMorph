@@ -85,15 +85,22 @@ public class RabbitConfig {
     public static String saveJsonConfigWithName(String rawName, RabbitConfigData data) {
         try {
             File dir = getConfigDir();
-            String cleanName = rawName != null ? rawName.replaceAll("[^a-zA-Z0-9_\\-]", "_").trim() : "";
+            String cleanName = rawName != null ? rawName.replaceAll("[^a-zA-Z0-9_\\- ]", "_").trim() : "";
             if (cleanName.isEmpty()) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
                 cleanName = "rabbit_preset_" + sdf.format(new Date());
             }
-            if (!cleanName.endsWith(".json")) {
-                cleanName += ".json";
+
+            if (cleanName.toLowerCase().endsWith(".json")) {
+                cleanName = cleanName.substring(0, cleanName.length() - 5).trim();
             }
-            File configFile = new File(dir, cleanName);
+
+            File configFile = new File(dir, cleanName + ".json");
+            int counter = 1;
+            while (configFile.exists()) {
+                configFile = new File(dir, cleanName + " (" + counter + ").json");
+                counter++;
+            }
 
             FileWriter writer = new FileWriter(configFile);
             GSON.toJson(data, writer);

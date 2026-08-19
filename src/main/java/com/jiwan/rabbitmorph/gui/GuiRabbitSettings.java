@@ -53,11 +53,15 @@ public class GuiRabbitSettings extends GuiScreen {
         // Content Area Y starts at topY + 24
         int contentY = topY + 24;
 
-        this.tabStats = new GuiTabStats(this.fontRendererObj, leftX, contentY);
-        this.tabScales = new GuiTabScales(this.fontRendererObj, leftX, contentY);
-        this.tabColors = new GuiTabColors(this.fontRendererObj, leftX, contentY);
-        this.tabEffects = new GuiTabEffects(this.fontRendererObj, leftX, contentY);
-        this.tabPresets = new GuiTabPresets(this.fontRendererObj, leftX, contentY + 12);
+        boolean isFirstInit = (this.tabStats == null);
+
+        if (isFirstInit) {
+            this.tabStats = new GuiTabStats(this.fontRendererObj, leftX, contentY);
+            this.tabScales = new GuiTabScales(this.fontRendererObj, leftX, contentY);
+            this.tabColors = new GuiTabColors(this.fontRendererObj, leftX, contentY);
+            this.tabEffects = new GuiTabEffects(this.fontRendererObj, leftX, contentY);
+            this.tabPresets = new GuiTabPresets(this.fontRendererObj, leftX, contentY + 12);
+        }
 
         this.tabEffects.initGui(this.buttonList, 30);
         this.tabPresets.initGui(this.buttonList, 40);
@@ -67,7 +71,10 @@ public class GuiRabbitSettings extends GuiScreen {
         int previewY = 16;
         int previewW = Math.max(60, this.width - previewX - 8);
         int previewH = Math.max(60, this.height - 24);
-        this.previewPanel = new GuiPreviewPanel(previewX, previewY, previewW, previewH);
+
+        if (this.previewPanel == null) {
+            this.previewPanel = new GuiPreviewPanel(previewX, previewY, previewW, previewH);
+        }
         this.previewPanel.initGui(this.buttonList, 20);
 
         // Bottom action buttons
@@ -78,7 +85,9 @@ public class GuiRabbitSettings extends GuiScreen {
         this.buttonList.add(new GuiButton(13, leftX + 132, actionY, 50, 14, I18n.format("gui.rabbitmorph.save_json")));
         this.buttonList.add(new GuiButton(14, leftX + 184, actionY, 50, 14, I18n.format("gui.rabbitmorph.load_json")));
 
-        loadCurrentPlayerData();
+        if (isFirstInit) {
+            loadCurrentPlayerData();
+        }
         updateTabVisibility();
     }
 
