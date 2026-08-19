@@ -21,6 +21,8 @@ public class RabbitData implements IExtendedEntityProperties {
     private double speed = RabbitConfig.DEFAULT_SPEED;
     private double jump = RabbitConfig.DEFAULT_JUMP;
     private double fallDamage = RabbitConfig.DEFAULT_FALL;
+    private float stepHeight = 0.6F;
+    private float knockbackRes = 0.0F;
 
     // Scales
     private float scaleOverall = 1.0F;
@@ -29,12 +31,18 @@ public class RabbitData implements IExtendedEntityProperties {
     private float scaleBody = 1.0F;
     private float scaleLegs = 1.0F;
     private float scaleTail = 1.0F;
+    private float scaleNose = 1.0F;
+    private float scaleEye = 1.0F;
 
     // RGBA (Including Alpha)
     private int bodyR = RabbitConfig.NORMAL_BODY_R, bodyG = RabbitConfig.NORMAL_BODY_G, bodyB = RabbitConfig.NORMAL_BODY_B, bodyA = 255;
     private int earR = RabbitConfig.NORMAL_EAR_R, earG = RabbitConfig.NORMAL_EAR_G, earB = RabbitConfig.NORMAL_EAR_B, earA = 255;
     private int eyeR = RabbitConfig.NORMAL_EYE_R, eyeG = RabbitConfig.NORMAL_EYE_G, eyeB = RabbitConfig.NORMAL_EYE_B, eyeA = 255;
     private int tailR = RabbitConfig.NORMAL_TAIL_R, tailG = RabbitConfig.NORMAL_TAIL_G, tailB = RabbitConfig.NORMAL_TAIL_B, tailA = 255;
+    private int pawsR = 240, pawsG = 200, pawsB = 200, pawsA = 255;
+
+    private int particleType = 0; // 0=None, 1=Hearts, 2=Stars, 3=Dust
+    private float soundPitch = 1.0F;
 
     private static final Map<UUID, RabbitDataHolder> CLIENT_CACHE = new HashMap<UUID, RabbitDataHolder>();
 
@@ -46,13 +54,19 @@ public class RabbitData implements IExtendedEntityProperties {
         public double speed = RabbitConfig.DEFAULT_SPEED;
         public double jump = RabbitConfig.DEFAULT_JUMP;
         public double fallDamage = RabbitConfig.DEFAULT_FALL;
+        public float stepHeight = 0.6F;
+        public float knockbackRes = 0.0F;
 
-        public float scaleOverall = 1.0F, scaleHead = 1.0F, scaleEar = 1.0F, scaleBody = 1.0F, scaleLegs = 1.0F, scaleTail = 1.0F;
+        public float scaleOverall = 1.0F, scaleHead = 1.0F, scaleEar = 1.0F, scaleBody = 1.0F, scaleLegs = 1.0F, scaleTail = 1.0F, scaleNose = 1.0F, scaleEye = 1.0F;
 
         public int bodyR = RabbitConfig.NORMAL_BODY_R, bodyG = RabbitConfig.NORMAL_BODY_G, bodyB = RabbitConfig.NORMAL_BODY_B, bodyA = 255;
         public int earR = RabbitConfig.NORMAL_EAR_R, earG = RabbitConfig.NORMAL_EAR_G, earB = RabbitConfig.NORMAL_EAR_B, earA = 255;
         public int eyeR = RabbitConfig.NORMAL_EYE_R, eyeG = RabbitConfig.NORMAL_EYE_G, eyeB = RabbitConfig.NORMAL_EYE_B, eyeA = 255;
         public int tailR = RabbitConfig.NORMAL_TAIL_R, tailG = RabbitConfig.NORMAL_TAIL_G, tailB = RabbitConfig.NORMAL_TAIL_B, tailA = 255;
+        public int pawsR = 240, pawsG = 200, pawsB = 200, pawsA = 255;
+
+        public int particleType = 0;
+        public float soundPitch = 1.0F;
     }
 
     public static void register(EntityPlayer player) {
@@ -81,6 +95,8 @@ public class RabbitData implements IExtendedEntityProperties {
         tag.setDouble("Speed", this.speed);
         tag.setDouble("Jump", this.jump);
         tag.setDouble("FallDamage", this.fallDamage);
+        tag.setFloat("StepHeight", this.stepHeight);
+        tag.setFloat("KnockbackRes", this.knockbackRes);
 
         tag.setFloat("ScaleOverall", this.scaleOverall);
         tag.setFloat("ScaleHead", this.scaleHead);
@@ -88,11 +104,17 @@ public class RabbitData implements IExtendedEntityProperties {
         tag.setFloat("ScaleBody", this.scaleBody);
         tag.setFloat("ScaleLegs", this.scaleLegs);
         tag.setFloat("ScaleTail", this.scaleTail);
+        tag.setFloat("ScaleNose", this.scaleNose);
+        tag.setFloat("ScaleEye", this.scaleEye);
 
         tag.setInteger("BodyR", this.bodyR); tag.setInteger("BodyG", this.bodyG); tag.setInteger("BodyB", this.bodyB); tag.setInteger("BodyA", this.bodyA);
         tag.setInteger("EarR", this.earR); tag.setInteger("EarG", this.earG); tag.setInteger("EarB", this.earB); tag.setInteger("EarA", this.earA);
         tag.setInteger("EyeR", this.eyeR); tag.setInteger("EyeG", this.eyeG); tag.setInteger("EyeB", this.eyeB); tag.setInteger("EyeA", this.eyeA);
         tag.setInteger("TailR", this.tailR); tag.setInteger("TailG", this.tailG); tag.setInteger("TailB", this.tailB); tag.setInteger("TailA", this.tailA);
+        tag.setInteger("PawsR", this.pawsR); tag.setInteger("PawsG", this.pawsG); tag.setInteger("PawsB", this.pawsB); tag.setInteger("PawsA", this.pawsA);
+
+        tag.setInteger("ParticleType", this.particleType);
+        tag.setFloat("SoundPitch", this.soundPitch);
 
         compound.setTag(PROP_NAME, tag);
     }
@@ -108,6 +130,8 @@ public class RabbitData implements IExtendedEntityProperties {
             this.speed = tag.getDouble("Speed");
             this.jump = tag.getDouble("Jump");
             this.fallDamage = tag.getDouble("FallDamage");
+            this.stepHeight = tag.hasKey("StepHeight") ? tag.getFloat("StepHeight") : 0.6F;
+            this.knockbackRes = tag.hasKey("KnockbackRes") ? tag.getFloat("KnockbackRes") : 0.0F;
 
             this.scaleOverall = tag.hasKey("ScaleOverall") ? tag.getFloat("ScaleOverall") : 1.0F;
             this.scaleHead = tag.hasKey("ScaleHead") ? tag.getFloat("ScaleHead") : 1.0F;
@@ -115,6 +139,8 @@ public class RabbitData implements IExtendedEntityProperties {
             this.scaleBody = tag.hasKey("ScaleBody") ? tag.getFloat("ScaleBody") : 1.0F;
             this.scaleLegs = tag.hasKey("ScaleLegs") ? tag.getFloat("ScaleLegs") : 1.0F;
             this.scaleTail = tag.hasKey("ScaleTail") ? tag.getFloat("ScaleTail") : 1.0F;
+            this.scaleNose = tag.hasKey("ScaleNose") ? tag.getFloat("ScaleNose") : 1.0F;
+            this.scaleEye = tag.hasKey("ScaleEye") ? tag.getFloat("ScaleEye") : 1.0F;
 
             this.bodyR = tag.getInteger("BodyR"); this.bodyG = tag.getInteger("BodyG"); this.bodyB = tag.getInteger("BodyB");
             this.bodyA = tag.hasKey("BodyA") ? tag.getInteger("BodyA") : 255;
@@ -127,6 +153,14 @@ public class RabbitData implements IExtendedEntityProperties {
 
             this.tailR = tag.getInteger("TailR"); this.tailG = tag.getInteger("TailG"); this.tailB = tag.getInteger("TailB");
             this.tailA = tag.hasKey("TailA") ? tag.getInteger("TailA") : 255;
+
+            this.pawsR = tag.hasKey("PawsR") ? tag.getInteger("PawsR") : 240;
+            this.pawsG = tag.hasKey("PawsG") ? tag.getInteger("PawsG") : 200;
+            this.pawsB = tag.hasKey("PawsB") ? tag.getInteger("PawsB") : 200;
+            this.pawsA = tag.hasKey("PawsA") ? tag.getInteger("PawsA") : 255;
+
+            this.particleType = tag.hasKey("ParticleType") ? tag.getInteger("ParticleType") : 0;
+            this.soundPitch = tag.hasKey("SoundPitch") ? tag.getFloat("SoundPitch") : 1.0F;
         }
     }
 
@@ -234,6 +268,28 @@ public class RabbitData implements IExtendedEntityProperties {
         if (data != null) data.fallDamage = RabbitUtils.clampDouble(fall, 0.0D, 10.0D, RabbitConfig.DEFAULT_FALL);
     }
 
+    public static float getStepHeight(EntityPlayer player) {
+        RabbitData data = get(player);
+        if (data != null) return data.stepHeight;
+        return 0.6F;
+    }
+
+    public static void setStepHeight(EntityPlayer player, float val) {
+        RabbitData data = get(player);
+        if (data != null) data.stepHeight = (float) RabbitUtils.clampDouble(val, 0.6D, 2.5D, 0.6D);
+    }
+
+    public static float getKnockbackRes(EntityPlayer player) {
+        RabbitData data = get(player);
+        if (data != null) return data.knockbackRes;
+        return 0.0F;
+    }
+
+    public static void setKnockbackRes(EntityPlayer player, float val) {
+        RabbitData data = get(player);
+        if (data != null) data.knockbackRes = (float) RabbitUtils.clampDouble(val, 0.0D, 1.0D, 0.0F);
+    }
+
     public static float getScale(EntityPlayer player, String part) {
         RabbitData data = get(player);
         if (data != null) {
@@ -243,6 +299,8 @@ public class RabbitData implements IExtendedEntityProperties {
             if ("body".equalsIgnoreCase(part)) return data.scaleBody;
             if ("legs".equalsIgnoreCase(part)) return data.scaleLegs;
             if ("tail".equalsIgnoreCase(part)) return data.scaleTail;
+            if ("nose".equalsIgnoreCase(part)) return data.scaleNose;
+            if ("eye".equalsIgnoreCase(part)) return data.scaleEye;
         }
         if (player != null) {
             RabbitDataHolder holder = CLIENT_CACHE.get(player.getUniqueID());
@@ -253,6 +311,8 @@ public class RabbitData implements IExtendedEntityProperties {
                 if ("body".equalsIgnoreCase(part)) return holder.scaleBody;
                 if ("legs".equalsIgnoreCase(part)) return holder.scaleLegs;
                 if ("tail".equalsIgnoreCase(part)) return holder.scaleTail;
+                if ("nose".equalsIgnoreCase(part)) return holder.scaleNose;
+                if ("eye".equalsIgnoreCase(part)) return holder.scaleEye;
             }
         }
         return 1.0F;
@@ -268,6 +328,8 @@ public class RabbitData implements IExtendedEntityProperties {
             else if ("body".equalsIgnoreCase(part)) data.scaleBody = scale;
             else if ("legs".equalsIgnoreCase(part)) data.scaleLegs = scale;
             else if ("tail".equalsIgnoreCase(part)) data.scaleTail = scale;
+            else if ("nose".equalsIgnoreCase(part)) data.scaleNose = scale;
+            else if ("eye".equalsIgnoreCase(part)) data.scaleEye = scale;
         }
         if (player != null) {
             RabbitDataHolder holder = getOrCreateCache(player.getUniqueID());
@@ -277,6 +339,8 @@ public class RabbitData implements IExtendedEntityProperties {
             else if ("body".equalsIgnoreCase(part)) holder.scaleBody = scale;
             else if ("legs".equalsIgnoreCase(part)) holder.scaleLegs = scale;
             else if ("tail".equalsIgnoreCase(part)) holder.scaleTail = scale;
+            else if ("nose".equalsIgnoreCase(part)) holder.scaleNose = scale;
+            else if ("eye".equalsIgnoreCase(part)) holder.scaleEye = scale;
         }
     }
 
@@ -303,6 +367,11 @@ public class RabbitData implements IExtendedEntityProperties {
                 if ("G".equalsIgnoreCase(channel)) return data.tailG;
                 if ("B".equalsIgnoreCase(channel)) return data.tailB;
                 if ("A".equalsIgnoreCase(channel)) return data.tailA;
+            } else if ("paws".equalsIgnoreCase(part)) {
+                if ("R".equalsIgnoreCase(channel)) return data.pawsR;
+                if ("G".equalsIgnoreCase(channel)) return data.pawsG;
+                if ("B".equalsIgnoreCase(channel)) return data.pawsB;
+                if ("A".equalsIgnoreCase(channel)) return data.pawsA;
             }
         }
         if (player != null) {
@@ -328,6 +397,11 @@ public class RabbitData implements IExtendedEntityProperties {
                     if ("G".equalsIgnoreCase(channel)) return holder.tailG;
                     if ("B".equalsIgnoreCase(channel)) return holder.tailB;
                     if ("A".equalsIgnoreCase(channel)) return holder.tailA;
+                } else if ("paws".equalsIgnoreCase(part)) {
+                    if ("R".equalsIgnoreCase(channel)) return holder.pawsR;
+                    if ("G".equalsIgnoreCase(channel)) return holder.pawsG;
+                    if ("B".equalsIgnoreCase(channel)) return holder.pawsB;
+                    if ("A".equalsIgnoreCase(channel)) return holder.pawsA;
                 }
             }
         }
@@ -343,6 +417,7 @@ public class RabbitData implements IExtendedEntityProperties {
             else if ("ear".equalsIgnoreCase(part)) { data.earR = r; data.earG = g; data.earB = b; data.earA = a; }
             else if ("eye".equalsIgnoreCase(part)) { data.eyeR = r; data.eyeG = g; data.eyeB = b; data.eyeA = a; }
             else if ("tail".equalsIgnoreCase(part)) { data.tailR = r; data.tailG = g; data.tailB = b; data.tailA = a; }
+            else if ("paws".equalsIgnoreCase(part)) { data.pawsR = r; data.pawsG = g; data.pawsB = b; data.pawsA = a; }
         }
 
         if (player != null) {
@@ -351,6 +426,7 @@ public class RabbitData implements IExtendedEntityProperties {
             else if ("ear".equalsIgnoreCase(part)) { holder.earR = r; holder.earG = g; holder.earB = b; holder.earA = a; }
             else if ("eye".equalsIgnoreCase(part)) { holder.eyeR = r; holder.eyeG = g; holder.eyeB = b; holder.eyeA = a; }
             else if ("tail".equalsIgnoreCase(part)) { holder.tailR = r; holder.tailG = g; holder.tailB = b; holder.tailA = a; }
+            else if ("paws".equalsIgnoreCase(part)) { holder.pawsR = r; holder.pawsG = g; holder.pawsB = b; holder.pawsA = a; }
         }
     }
 
@@ -361,29 +437,5 @@ public class RabbitData implements IExtendedEntityProperties {
             CLIENT_CACHE.put(uuid, holder);
         }
         return holder;
-    }
-
-    public static void syncClientCache(UUID uuid, boolean isRabbit, boolean isGlowing, String type, double health, double speed, double jump, double fall,
-                                       float scaleOverall, float scaleHead, float scaleEar, float scaleBody, float scaleLegs, float scaleTail,
-                                       int bodyR, int bodyG, int bodyB, int bodyA,
-                                       int earR, int earG, int earB, int earA,
-                                       int eyeR, int eyeG, int eyeB, int eyeA,
-                                       int tailR, int tailG, int tailB, int tailA) {
-        RabbitDataHolder holder = getOrCreateCache(uuid);
-        holder.rabbit = isRabbit;
-        holder.glowing = isGlowing;
-        holder.type = type;
-        holder.health = health;
-        holder.speed = speed;
-        holder.jump = jump;
-        holder.fallDamage = fall;
-
-        holder.scaleOverall = scaleOverall; holder.scaleHead = scaleHead; holder.scaleEar = scaleEar;
-        holder.scaleBody = scaleBody; holder.scaleLegs = scaleLegs; holder.scaleTail = scaleTail;
-
-        holder.bodyR = bodyR; holder.bodyG = bodyG; holder.bodyB = bodyB; holder.bodyA = bodyA;
-        holder.earR = earR; holder.earG = earG; holder.earB = earB; holder.earA = earA;
-        holder.eyeR = eyeR; holder.eyeG = eyeG; holder.eyeB = eyeB; holder.eyeA = eyeA;
-        holder.tailR = tailR; holder.tailG = tailG; holder.tailB = tailB; holder.tailA = tailA;
     }
 }
