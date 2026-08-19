@@ -119,6 +119,9 @@ public class GuiRabbitSettings extends GuiScreen {
         btnTabColors.enabled = activeTab != 2;
         btnTabEffects.enabled = activeTab != 3;
         btnTabPresets.enabled = activeTab != 4;
+
+        if (tabEffects != null) tabEffects.setVisible(activeTab == 3);
+        if (tabPresets != null) tabPresets.setVisible(activeTab == 4);
     }
 
     @Override

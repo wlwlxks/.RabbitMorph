@@ -35,9 +35,19 @@ public class GuiTabEffects {
         buttonList.add(btnGlow);
         buttonList.add(btnParticles);
         buttonList.add(btnFirstPerson);
+
+        setVisible(false);
+    }
+
+    public void setVisible(boolean visible) {
+        if (btnGlow != null) btnGlow.visible = visible;
+        if (btnParticles != null) btnParticles.visible = visible;
+        if (btnFirstPerson != null) btnFirstPerson.visible = visible;
     }
 
     public boolean actionPerformed(GuiButton button) {
+        if (!button.visible) return false;
+
         if (button == btnGlow) {
             this.isGlowing = !this.isGlowing;
             this.btnGlow.displayString = getGlowText();

@@ -37,9 +37,21 @@ public class GuiTabPresets {
         buttonList.add(btnBlack);
         buttonList.add(btnWhite);
         buttonList.add(btnGolden);
+
+        setVisible(false);
+    }
+
+    public void setVisible(boolean visible) {
+        if (btnNormal != null) btnNormal.visible = visible;
+        if (btnBrown != null) btnBrown.visible = visible;
+        if (btnBlack != null) btnBlack.visible = visible;
+        if (btnWhite != null) btnWhite.visible = visible;
+        if (btnGolden != null) btnGolden.visible = visible;
     }
 
     public String actionPerformed(GuiButton button) {
+        if (!button.visible) return null;
+
         if (button == btnNormal) { selectedType = RabbitConfig.TYPE_NORMAL; return selectedType; }
         if (button == btnBrown) { selectedType = RabbitConfig.TYPE_BROWN; return selectedType; }
         if (button == btnBlack) { selectedType = RabbitConfig.TYPE_BLACK; return selectedType; }

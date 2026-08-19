@@ -57,8 +57,11 @@ public class RabbitPreviewRenderer {
         GlStateManager.translate((float)centerX, (float)centerY, 200.0F);
 
         float baseScale = 50.0F * zoom * sOverall;
-        // Invert Y axis (-baseScale) so feet are at the bottom and head at the top (right side up)
-        GlStateManager.scale(baseScale, -baseScale, baseScale);
+
+        // Minecraft standard GuiInventory transform for 100% upright right-side up rendering
+        GlStateManager.scale(-baseScale, baseScale, baseScale);
+        GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+        GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
         GlStateManager.rotate(pitch, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(yaw, 0.0F, 1.0F, 0.0F);
