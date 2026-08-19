@@ -30,7 +30,7 @@ gradlew.bat clean build
 ```
 
 The compiled output JAR will be generated at:
-`build/libs/RabbitMorph-1.0.1-b1-forge11.15.1.2318.jar`
+`build/libs/RabbitMorph-1.0.2-b2-forge11.15.1.2318.jar`
 
 ## Controls
 

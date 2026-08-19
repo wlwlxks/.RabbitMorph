@@ -52,19 +52,22 @@ public class RabbitPreviewRenderer {
         net.minecraft.client.gui.Gui.drawRect(x + width - 1, y, x + width, y + height, 0xFF445566);
 
         int centerX = x + width / 2;
-        int centerY = y + height / 2 + (int)(25 * zoom);
+        int centerY = y + height / 2 + (int)(15 * zoom);
 
         GlStateManager.translate((float)centerX, (float)centerY, 200.0F);
 
-        float baseScale = 50.0F * zoom * sOverall;
+        float baseScale = 45.0F * zoom * sOverall;
 
-        // Minecraft standard GuiInventory transform for 100% upright right-side up rendering
+        // In GUI screen space (Y positive = downwards):
+        // Model Y=0 is head (top), Model Y=24 is feet (bottom).
+        // Scaling Y by +baseScale places head at top, feet at bottom (100% upright!).
         GlStateManager.scale(-baseScale, baseScale, baseScale);
-        GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
-        GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
+        GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F); // Face camera (head towards screen)
 
         GlStateManager.rotate(pitch, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(yaw, 0.0F, 1.0F, 0.0F);
+
+        GlStateManager.translate(0.0F, -1.1F, 0.0F); // Offset Y to center rabbit vertically in box
 
         GlStateManager.enableDepth();
         GlStateManager.enableColorMaterial();

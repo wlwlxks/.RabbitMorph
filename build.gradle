@@ -14,7 +14,37 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "1.0.1-b1-forge11.15.1.2318"
+// Auto Versioning Logic: Load version.properties and increment on every build
+def versionPropsFile = file('version.properties')
+def versionProps = new Properties()
+
+if (versionPropsFile.exists()) {
+    versionPropsFile.withInputStream { versionProps.load(it) }
+} else {
+    versionProps['majorVersion'] = '1'
+    versionProps['minorVersion'] = '0'
+    versionProps['patchVersion'] = '2'
+    versionProps['buildNumber'] = '2'
+    versionProps['forgeVersion'] = '11.15.1.2318'
+}
+
+int major = versionProps['majorVersion'].toInteger()
+int minor = versionProps['minorVersion'].toInteger()
+int patch = versionProps['patchVersion'].toInteger()
+int buildNum = versionProps['buildNumber'].toInteger()
+String forgeVer = versionProps['forgeVersion']
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.hasTask(":build") || taskGraph.hasTask(":jar")) {
+        buildNum += 1
+        patch += 1
+        versionProps['buildNumber'] = buildNum.toString()
+        versionProps['patchVersion'] = patch.toString()
+        versionPropsFile.withOutputStream { versionProps.store(it, "Auto-generated build version tracking") }
+    }
+}
+
+version = "${major}.${minor}.${patch}-b${buildNum}-forge${forgeVer}"
 group = "com.jiwan.rabbitmorph"
 archivesBaseName = "RabbitMorph"
 
@@ -22,6 +52,9 @@ minecraft {
     version = "1.8.9-11.15.1.2318-1.8.9"
     runDir = "run"
     mappings = "stable_20"
+    
+    replace "@VERSION@", project.version
+    replaceIn "RabbitMorph.java"
 }
 
 sourceCompatibility = 1.8
