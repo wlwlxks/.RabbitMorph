@@ -25,7 +25,7 @@ run
 .build/
 .gradle_home/
 .vscode/
-.gitignore
+*.gitignore
 
 # .log 무시
 *.log
