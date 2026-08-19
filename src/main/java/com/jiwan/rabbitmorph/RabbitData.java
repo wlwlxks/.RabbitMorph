@@ -438,4 +438,28 @@ public class RabbitData implements IExtendedEntityProperties {
         }
         return holder;
     }
+
+    public static void syncClientCache(UUID uuid, boolean isRabbit, boolean isGlowing, String type, double health, double speed, double jump, double fall,
+                                       float scaleOverall, float scaleHead, float scaleEar, float scaleBody, float scaleLegs, float scaleTail,
+                                       int bodyR, int bodyG, int bodyB, int bodyA,
+                                       int earR, int earG, int earB, int earA,
+                                       int eyeR, int eyeG, int eyeB, int eyeA,
+                                       int tailR, int tailG, int tailB, int tailA) {
+        RabbitDataHolder holder = getOrCreateCache(uuid);
+        holder.rabbit = isRabbit;
+        holder.glowing = isGlowing;
+        holder.type = type;
+        holder.health = health;
+        holder.speed = speed;
+        holder.jump = jump;
+        holder.fallDamage = fall;
+
+        holder.scaleOverall = scaleOverall; holder.scaleHead = scaleHead; holder.scaleEar = scaleEar;
+        holder.scaleBody = scaleBody; holder.scaleLegs = scaleLegs; holder.scaleTail = scaleTail;
+
+        holder.bodyR = bodyR; holder.bodyG = bodyG; holder.bodyB = bodyB; holder.bodyA = bodyA;
+        holder.earR = earR; holder.earG = earG; holder.earB = earB; holder.earA = earA;
+        holder.eyeR = eyeR; holder.eyeG = eyeG; holder.eyeB = eyeB; holder.eyeA = eyeA;
+        holder.tailR = tailR; holder.tailG = tailG; holder.tailB = tailB; holder.tailA = tailA;
+    }
 }
