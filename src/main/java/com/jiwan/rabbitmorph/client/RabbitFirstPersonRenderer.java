@@ -4,6 +4,7 @@ import com.jiwan.rabbitmorph.RabbitData;
 import com.jiwan.rabbitmorph.model.ModelRabbitHands;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -24,6 +25,7 @@ public class RabbitFirstPersonRenderer {
 
         if (!RabbitData.isRabbit(player)) return;
 
+        // Cancel default human arm rendering
         event.setCanceled(true);
 
         GlStateManager.pushMatrix();
@@ -31,18 +33,24 @@ public class RabbitFirstPersonRenderer {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
 
+        RenderHelper.enableStandardItemLighting();
+
         Minecraft.getMinecraft().getTextureManager().bindTexture(RABBIT_TEXTURE);
 
         int bodyR = RabbitData.color(player, "body", "R");
         int bodyG = RabbitData.color(player, "body", "G");
         int bodyB = RabbitData.color(player, "body", "B");
-        int bodyA = RabbitData.color(player, "body", "A");
 
         float swingProgress = player.getSwingProgress(event.partialTicks);
         float ticksExisted = player.ticksExisted + event.partialTicks;
 
+        // Position rabbit paws in front of camera
+        GlStateManager.translate(0.0F, -0.35F, -0.5F);
+        GlStateManager.scale(0.85F, 0.85F, 0.85F);
+
         this.handsModel.renderHands(swingProgress, 0.0F, ticksExisted, bodyR, bodyG, bodyB);
 
+        RenderHelper.disableStandardItemLighting();
         GlStateManager.disableBlend();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();

@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class PacketRabbitSettings implements IMessage {
 
     private String type;
+    private boolean isGlowing;
     private double health, speed, jump, fall;
     private float scaleOverall, scaleHead, scaleEar, scaleBody, scaleLegs, scaleTail;
     private int bodyR, bodyG, bodyB, bodyA;
@@ -24,13 +25,14 @@ public class PacketRabbitSettings implements IMessage {
 
     public PacketRabbitSettings() {}
 
-    public PacketRabbitSettings(String type, double health, double speed, double jump, double fall,
+    public PacketRabbitSettings(String type, boolean isGlowing, double health, double speed, double jump, double fall,
                                 float scaleOverall, float scaleHead, float scaleEar, float scaleBody, float scaleLegs, float scaleTail,
                                 int bodyR, int bodyG, int bodyB, int bodyA,
                                 int earR, int earG, int earB, int earA,
                                 int eyeR, int eyeG, int eyeB, int eyeA,
                                 int tailR, int tailG, int tailB, int tailA) {
         this.type = type;
+        this.isGlowing = isGlowing;
         this.health = health; this.speed = speed; this.jump = jump; this.fall = fall;
         this.scaleOverall = scaleOverall; this.scaleHead = scaleHead; this.scaleEar = scaleEar;
         this.scaleBody = scaleBody; this.scaleLegs = scaleLegs; this.scaleTail = scaleTail;
@@ -43,6 +45,7 @@ public class PacketRabbitSettings implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         this.type = ByteBufUtils.readUTF8String(buf);
+        this.isGlowing = buf.readBoolean();
         this.health = buf.readDouble(); this.speed = buf.readDouble(); this.jump = buf.readDouble(); this.fall = buf.readDouble();
         this.scaleOverall = buf.readFloat(); this.scaleHead = buf.readFloat(); this.scaleEar = buf.readFloat();
         this.scaleBody = buf.readFloat(); this.scaleLegs = buf.readFloat(); this.scaleTail = buf.readFloat();
@@ -55,6 +58,7 @@ public class PacketRabbitSettings implements IMessage {
     @Override
     public void toBytes(ByteBuf buf) {
         ByteBufUtils.writeUTF8String(buf, this.type != null ? this.type : RabbitConfig.TYPE_NORMAL);
+        buf.writeBoolean(this.isGlowing);
         buf.writeDouble(this.health); buf.writeDouble(this.speed); buf.writeDouble(this.jump); buf.writeDouble(this.fall);
         buf.writeFloat(this.scaleOverall); buf.writeFloat(this.scaleHead); buf.writeFloat(this.scaleEar);
         buf.writeFloat(this.scaleBody); buf.writeFloat(this.scaleLegs); buf.writeFloat(this.scaleTail);
@@ -81,6 +85,7 @@ public class PacketRabbitSettings implements IMessage {
                     double validFall = RabbitUtils.clampDouble(message.fall, 0.0D, 10.0D, RabbitConfig.DEFAULT_FALL);
 
                     RabbitData.setType(player, validatedType);
+                    RabbitData.setGlowing(player, message.isGlowing);
                     RabbitData.setHealth(player, validHealth);
                     RabbitData.setSpeed(player, validSpeed);
                     RabbitData.setJump(player, validJump);

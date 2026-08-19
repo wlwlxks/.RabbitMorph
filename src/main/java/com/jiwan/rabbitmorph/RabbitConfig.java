@@ -51,6 +51,7 @@ public class RabbitConfig {
 
     public static class RabbitConfigData {
         public String type = TYPE_NORMAL;
+        public boolean isGlowing = false;
         public double health = DEFAULT_HEALTH;
         public double speed = DEFAULT_SPEED;
         public double jump = DEFAULT_JUMP;

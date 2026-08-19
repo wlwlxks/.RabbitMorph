@@ -21,6 +21,8 @@ import java.io.IOException;
 public class GuiRabbitSettings extends GuiScreen {
 
     private String selectedType = RabbitConfig.TYPE_NORMAL;
+    private boolean isGlowing = false;
+
     private GuiTextField fieldHealth, fieldSpeed, fieldJump, fieldFall;
     private GuiTextField fieldScaleOverall, fieldScaleHead, fieldScaleEar, fieldScaleBody, fieldScaleLegs, fieldScaleTail;
 
@@ -30,7 +32,8 @@ public class GuiRabbitSettings extends GuiScreen {
     private float previewPitch = 0.0F;
     private float previewZoom = 1.0F;
     private float ticksOpen = 0.0F;
-    private int previewPose = 0; // 0=Idle, 1=Walk, 2=Jump
+    private int previewPose = 0; // 0=Idle, 1=Walk, 2=Jump, 3=Sneak
+    private int previewBgIndex = 0; // 0=Dark, 1=Midnight, 2=Black, 3=Forest, 4=Trans
 
     private boolean isDraggingPreview = false;
     private int prevMouseX, prevMouseY;
@@ -42,26 +45,30 @@ public class GuiRabbitSettings extends GuiScreen {
         EntityPlayerSP player = this.mc.thePlayer;
         if (player != null) {
             this.selectedType = RabbitData.getType(player);
+            this.isGlowing = RabbitData.isGlowing(player);
         }
 
-        int leftX = 10;
-        int topY = 22;
+        int leftX = 8;
+        int topY = 16;
 
-        // Preset type buttons
-        int btnWidth = 46;
+        // Preset type buttons (Width 45 each, total width = 231px)
+        int btnWidth = 45;
         int btnHeight = 14;
         this.buttonList.add(new GuiButton(1, leftX, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.normal")));
-        this.buttonList.add(new GuiButton(2, leftX + 48, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.brown")));
-        this.buttonList.add(new GuiButton(3, leftX + 96, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.black")));
-        this.buttonList.add(new GuiButton(4, leftX + 144, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.white")));
-        this.buttonList.add(new GuiButton(5, leftX + 192, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.golden")));
+        this.buttonList.add(new GuiButton(2, leftX + 47, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.brown")));
+        this.buttonList.add(new GuiButton(3, leftX + 94, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.black")));
+        this.buttonList.add(new GuiButton(4, leftX + 141, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.white")));
+        this.buttonList.add(new GuiButton(5, leftX + 188, topY, btnWidth, btnHeight, I18n.format("gui.rabbitmorph.preset.golden")));
 
         // Stats fields
-        int statsY = topY + 18;
-        this.fieldHealth = new GuiTextField(100, this.fontRendererObj, leftX + 45, statsY, 32, 12);
-        this.fieldSpeed = new GuiTextField(101, this.fontRendererObj, leftX + 45, statsY + 15, 32, 12);
-        this.fieldJump = new GuiTextField(102, this.fontRendererObj, leftX + 145, statsY, 32, 12);
-        this.fieldFall = new GuiTextField(103, this.fontRendererObj, leftX + 145, statsY + 15, 32, 12);
+        int statsY = topY + 17;
+        this.fieldHealth = new GuiTextField(100, this.fontRendererObj, leftX + 42, statsY, 24, 11);
+        this.fieldSpeed = new GuiTextField(101, this.fontRendererObj, leftX + 42, statsY + 13, 24, 11);
+        this.fieldJump = new GuiTextField(102, this.fontRendererObj, leftX + 100, statsY, 24, 11);
+        this.fieldFall = new GuiTextField(103, this.fontRendererObj, leftX + 100, statsY + 13, 24, 11);
+
+        // Glowing toggle button
+        this.buttonList.add(new GuiButton(30, leftX + 130, statsY, 103, 24, getGlowingButtonText()));
 
         double curHealth = player != null ? RabbitData.getHealth(player) : RabbitConfig.DEFAULT_HEALTH;
         double curSpeed = player != null ? RabbitData.getSpeed(player) : RabbitConfig.DEFAULT_SPEED;
@@ -73,14 +80,15 @@ public class GuiRabbitSettings extends GuiScreen {
         this.fieldJump.setText(String.valueOf(curJump));
         this.fieldFall.setText(String.valueOf(curFall));
 
-        // Detailed Part Scales fields
-        int scalesY = statsY + 30;
-        this.fieldScaleOverall = new GuiTextField(200, this.fontRendererObj, leftX + 45, scalesY, 28, 12);
-        this.fieldScaleHead = new GuiTextField(201, this.fontRendererObj, leftX + 115, scalesY, 28, 12);
-        this.fieldScaleEar = new GuiTextField(202, this.fontRendererObj, leftX + 185, scalesY, 28, 12);
-        this.fieldScaleBody = new GuiTextField(203, this.fontRendererObj, leftX + 45, scalesY + 14, 28, 12);
-        this.fieldScaleLegs = new GuiTextField(204, this.fontRendererObj, leftX + 115, scalesY + 14, 28, 12);
-        this.fieldScaleTail = new GuiTextField(205, this.fontRendererObj, leftX + 185, scalesY + 14, 28, 12);
+        // Part Scales fields (compact grid)
+        int scalesY = statsY + 28;
+        this.fieldScaleOverall = new GuiTextField(200, this.fontRendererObj, leftX + 30, scalesY, 22, 11);
+        this.fieldScaleHead = new GuiTextField(201, this.fontRendererObj, leftX + 85, scalesY, 22, 11);
+        this.fieldScaleEar = new GuiTextField(202, this.fontRendererObj, leftX + 132, scalesY, 22, 11);
+        this.fieldScaleBody = new GuiTextField(203, this.fontRendererObj, leftX + 185, scalesY, 22, 11);
+
+        this.fieldScaleLegs = new GuiTextField(204, this.fontRendererObj, leftX + 34, scalesY + 13, 22, 11);
+        this.fieldScaleTail = new GuiTextField(205, this.fontRendererObj, leftX + 85, scalesY + 13, 22, 11);
 
         this.fieldScaleOverall.setText(String.valueOf(player != null ? RabbitData.getScale(player, "overall") : 1.0F));
         this.fieldScaleHead.setText(String.valueOf(player != null ? RabbitData.getScale(player, "head") : 1.0F));
@@ -90,7 +98,7 @@ public class GuiRabbitSettings extends GuiScreen {
         this.fieldScaleTail.setText(String.valueOf(player != null ? RabbitData.getScale(player, "tail") : 1.0F));
 
         // Color pickers with RGBA sliders
-        int colorY = scalesY + 30;
+        int colorY = scalesY + 28;
         int curBR = player != null ? RabbitData.color(player, "body", "R") : RabbitConfig.NORMAL_BODY_R;
         int curBG = player != null ? RabbitData.color(player, "body", "G") : RabbitConfig.NORMAL_BODY_G;
         int curBB = player != null ? RabbitData.color(player, "body", "B") : RabbitConfig.NORMAL_BODY_B;
@@ -112,20 +120,27 @@ public class GuiRabbitSettings extends GuiScreen {
         int curTA = player != null ? RabbitData.color(player, "tail", "A") : 255;
 
         this.pickerBody = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY, I18n.format("gui.rabbitmorph.body_color"), curBR, curBG, curBB, curBA);
-        this.pickerEar = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY + 16, I18n.format("gui.rabbitmorph.ear_color"), curER, curEG, curEB, curEA);
-        this.pickerEye = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY + 32, I18n.format("gui.rabbitmorph.eye_color"), curEyR, curEyG, curEyB, curEyA);
-        this.pickerTail = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY + 48, I18n.format("gui.rabbitmorph.tail_color"), curTR, curTG, curTB, curTA);
+        this.pickerEar = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY + 15, I18n.format("gui.rabbitmorph.ear_color"), curER, curEG, curEB, curEA);
+        this.pickerEye = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY + 30, I18n.format("gui.rabbitmorph.eye_color"), curEyR, curEyG, curEyB, curEyA);
+        this.pickerTail = new GuiRabbitColorPicker(this.fontRendererObj, leftX, colorY + 45, I18n.format("gui.rabbitmorph.tail_color"), curTR, curTG, curTB, curTA);
 
-        // Preview pose button
-        this.buttonList.add(new GuiButton(20, 265, 8, 60, 14, "Pose: Idle"));
+        // Preview controls above preview box (x starting at 246)
+        int previewX = 246;
+        this.buttonList.add(new GuiButton(20, previewX, 2, 65, 12, "Pose: Idle"));
+        this.buttonList.add(new GuiButton(21, previewX + 68, 2, 75, 12, RabbitPreviewRenderer.BG_NAMES[0]));
+        this.buttonList.add(new GuiButton(22, previewX + 146, 2, 55, 12, "Reset Cam"));
 
         // Bottom action buttons
-        int actionY = this.height - 20;
-        this.buttonList.add(new GuiButton(10, leftX, actionY, 45, 16, I18n.format("gui.rabbitmorph.apply")));
-        this.buttonList.add(new GuiButton(11, leftX + 47, actionY, 45, 16, I18n.format("gui.rabbitmorph.cancel")));
-        this.buttonList.add(new GuiButton(12, leftX + 94, actionY, 45, 16, I18n.format("gui.rabbitmorph.reset")));
-        this.buttonList.add(new GuiButton(13, leftX + 141, actionY, 52, 16, I18n.format("gui.rabbitmorph.save_json")));
-        this.buttonList.add(new GuiButton(14, leftX + 195, actionY, 52, 16, I18n.format("gui.rabbitmorph.load_json")));
+        int actionY = Math.max(colorY + 62, this.height - 18);
+        this.buttonList.add(new GuiButton(10, leftX, actionY, 42, 14, I18n.format("gui.rabbitmorph.apply")));
+        this.buttonList.add(new GuiButton(11, leftX + 44, actionY, 42, 14, I18n.format("gui.rabbitmorph.cancel")));
+        this.buttonList.add(new GuiButton(12, leftX + 88, actionY, 42, 14, I18n.format("gui.rabbitmorph.reset")));
+        this.buttonList.add(new GuiButton(13, leftX + 132, actionY, 50, 14, I18n.format("gui.rabbitmorph.save_json")));
+        this.buttonList.add(new GuiButton(14, leftX + 184, actionY, 50, 14, I18n.format("gui.rabbitmorph.load_json")));
+    }
+
+    private String getGlowingButtonText() {
+        return "Glow: " + (this.isGlowing ? "ON" : "OFF");
     }
 
     @Override
@@ -146,6 +161,7 @@ public class GuiRabbitSettings extends GuiScreen {
                 break;
             case 12: // Reset defaults
                 selectPreset(RabbitConfig.TYPE_NORMAL);
+                this.isGlowing = false;
                 this.fieldHealth.setText(String.valueOf(RabbitConfig.DEFAULT_HEALTH));
                 this.fieldSpeed.setText(String.valueOf(RabbitConfig.DEFAULT_SPEED));
                 this.fieldJump.setText(String.valueOf(RabbitConfig.DEFAULT_JUMP));
@@ -160,9 +176,25 @@ public class GuiRabbitSettings extends GuiScreen {
                 loadJsonConfig();
                 break;
             case 20: // Pose toggle
-                this.previewPose = (this.previewPose + 1) % 3;
-                String poseName = this.previewPose == 0 ? "Pose: Idle" : (this.previewPose == 1 ? "Pose: Walk" : "Pose: Jump");
+                this.previewPose = (this.previewPose + 1) % 4;
+                String poseName = "Pose: Idle";
+                if (this.previewPose == 1) poseName = "Pose: Walk";
+                else if (this.previewPose == 2) poseName = "Pose: Jump";
+                else if (this.previewPose == 3) poseName = "Pose: Sneak";
                 button.displayString = poseName;
+                break;
+            case 21: // Background color toggle
+                this.previewBgIndex = (this.previewBgIndex + 1) % RabbitPreviewRenderer.BG_COLORS.length;
+                button.displayString = RabbitPreviewRenderer.BG_NAMES[this.previewBgIndex];
+                break;
+            case 22: // Reset Camera
+                this.previewYaw = 0.0F;
+                this.previewPitch = 0.0F;
+                this.previewZoom = 1.0F;
+                break;
+            case 30: // Glowing toggle
+                this.isGlowing = !this.isGlowing;
+                button.displayString = getGlowingButtonText();
                 break;
         }
     }
@@ -170,6 +202,7 @@ public class GuiRabbitSettings extends GuiScreen {
     private void saveJsonConfig() {
         RabbitConfig.RabbitConfigData data = new RabbitConfig.RabbitConfigData();
         data.type = this.selectedType;
+        data.isGlowing = this.isGlowing;
         data.health = RabbitUtils.parseDoubleSafe(this.fieldHealth.getText(), RabbitConfig.DEFAULT_HEALTH);
         data.speed = RabbitUtils.parseDoubleSafe(this.fieldSpeed.getText(), RabbitConfig.DEFAULT_SPEED);
         data.jump = RabbitUtils.parseDoubleSafe(this.fieldJump.getText(), RabbitConfig.DEFAULT_JUMP);
@@ -194,6 +227,7 @@ public class GuiRabbitSettings extends GuiScreen {
         RabbitConfig.RabbitConfigData data = RabbitConfig.loadLatestJsonConfig();
         if (data != null) {
             this.selectedType = data.type != null ? data.type : RabbitConfig.TYPE_NORMAL;
+            this.isGlowing = data.isGlowing;
             this.fieldHealth.setText(String.valueOf(data.health));
             this.fieldSpeed.setText(String.valueOf(data.speed));
             this.fieldJump.setText(String.valueOf(data.jump));
@@ -257,7 +291,7 @@ public class GuiRabbitSettings extends GuiScreen {
         float sTail = (float) RabbitUtils.parseDoubleSafe(this.fieldScaleTail.getText(), 1.0D);
 
         PacketRabbitSettings pkt = new PacketRabbitSettings(
-                this.selectedType, health, speed, jump, fall,
+                this.selectedType, this.isGlowing, health, speed, jump, fall,
                 sOverall, sHead, sEar, sBody, sLegs, sTail,
                 this.pickerBody.getR(), this.pickerBody.getG(), this.pickerBody.getB(), this.pickerBody.getA(),
                 this.pickerEar.getR(), this.pickerEar.getG(), this.pickerEar.getB(), this.pickerEar.getA(),
@@ -310,10 +344,10 @@ public class GuiRabbitSettings extends GuiScreen {
         this.pickerEye.mouseClicked(mouseX, mouseY, mouseButton);
         this.pickerTail.mouseClicked(mouseX, mouseY, mouseButton);
 
-        int previewX = 260;
-        int previewY = 24;
-        int previewW = this.width - previewX - 10;
-        int previewH = this.height - 48;
+        int previewX = 246;
+        int previewY = 16;
+        int previewW = Math.max(60, this.width - previewX - 8);
+        int previewH = Math.max(60, this.height - 24);
 
         if (mouseButton == 0 && mouseX >= previewX && mouseX <= previewX + previewW && mouseY >= previewY && mouseY <= previewY + previewH) {
             this.isDraggingPreview = true;
@@ -344,8 +378,8 @@ public class GuiRabbitSettings extends GuiScreen {
             this.previewYaw += deltaX * 1.2F;
             this.previewPitch += deltaY * 0.8F;
 
-            if (this.previewPitch < -60.0F) this.previewPitch = -60.0F;
-            if (this.previewPitch > 60.0F) this.previewPitch = 60.0F;
+            if (this.previewPitch < -75.0F) this.previewPitch = -75.0F;
+            if (this.previewPitch > 75.0F) this.previewPitch = 75.0F;
 
             this.prevMouseX = mouseX;
             this.prevMouseY = mouseY;
@@ -373,44 +407,44 @@ public class GuiRabbitSettings extends GuiScreen {
         this.ticksOpen += partialTicks;
 
         String title = I18n.format("gui.rabbitmorph.title");
-        this.fontRendererObj.drawStringWithShadow(title, 10, 6, 0xFFFF55);
+        this.fontRendererObj.drawStringWithShadow(title, 8, 4, 0xFFFF55);
 
-        int leftX = 10;
-        int topY = 22;
-        int statsY = topY + 18;
+        int leftX = 8;
+        int topY = 16;
+        int statsY = topY + 17;
 
-        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.health"), leftX, statsY + 2, 0xCCCCCC);
+        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.health"), leftX, statsY + 1, 0xDDDDDD);
         this.fieldHealth.drawTextBox();
 
-        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.speed"), leftX, statsY + 17, 0xCCCCCC);
+        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.speed"), leftX, statsY + 14, 0xDDDDDD);
         this.fieldSpeed.drawTextBox();
 
-        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.jump"), leftX + 85, statsY + 2, 0xCCCCCC);
+        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.jump"), leftX + 70, statsY + 1, 0xDDDDDD);
         this.fieldJump.drawTextBox();
 
-        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.fall"), leftX + 85, statsY + 17, 0xCCCCCC);
+        this.fontRendererObj.drawString(I18n.format("gui.rabbitmorph.fall"), leftX + 70, statsY + 14, 0xDDDDDD);
         this.fieldFall.drawTextBox();
 
-        int scalesY = statsY + 30;
-        this.fontRendererObj.drawString("Scale All:", leftX, scalesY + 2, 0xAAAAAA);
+        int scalesY = statsY + 28;
+        this.fontRendererObj.drawString("Scale All:", leftX, scalesY + 1, 0xAAAAAA);
         this.fieldScaleOverall.drawTextBox();
 
-        this.fontRendererObj.drawString("Head:", leftX + 80, scalesY + 2, 0xAAAAAA);
+        this.fontRendererObj.drawString("Head:", leftX + 56, scalesY + 1, 0xAAAAAA);
         this.fieldScaleHead.drawTextBox();
 
-        this.fontRendererObj.drawString("Ear:", leftX + 155, scalesY + 2, 0xAAAAAA);
+        this.fontRendererObj.drawString("Ear:", leftX + 110, scalesY + 1, 0xAAAAAA);
         this.fieldScaleEar.drawTextBox();
 
-        this.fontRendererObj.drawString("Body:", leftX, scalesY + 16, 0xAAAAAA);
+        this.fontRendererObj.drawString("Body:", leftX + 158, scalesY + 1, 0xAAAAAA);
         this.fieldScaleBody.drawTextBox();
 
-        this.fontRendererObj.drawString("Legs:", leftX + 80, scalesY + 16, 0xAAAAAA);
+        this.fontRendererObj.drawString("Legs:", leftX, scalesY + 14, 0xAAAAAA);
         this.fieldScaleLegs.drawTextBox();
 
-        this.fontRendererObj.drawString("Tail:", leftX + 155, scalesY + 16, 0xAAAAAA);
+        this.fontRendererObj.drawString("Tail:", leftX + 60, scalesY + 14, 0xAAAAAA);
         this.fieldScaleTail.drawTextBox();
 
-        int colorY = scalesY + 30;
+        int colorY = scalesY + 28;
         this.pickerBody.draw(this.fontRendererObj, mouseX, mouseY);
         this.pickerEar.draw(this.fontRendererObj, mouseX, mouseY);
         this.pickerEye.draw(this.fontRendererObj, mouseX, mouseY);
@@ -418,13 +452,13 @@ public class GuiRabbitSettings extends GuiScreen {
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        // Draw Live 360 Preview
-        int previewX = 260;
-        int previewY = 24;
-        int previewW = this.width - previewX - 10;
-        int previewH = this.height - 48;
+        // Draw Live 360 Preview panel
+        int previewX = 246;
+        int previewY = 16;
+        int previewW = Math.max(60, this.width - previewX - 8);
+        int previewH = Math.max(60, this.height - 24);
 
-        if (previewW > 60 && previewH > 60) {
+        if (previewW > 40 && previewH > 40) {
             float sOverall = (float) RabbitUtils.parseDoubleSafe(this.fieldScaleOverall.getText(), 1.0D);
             float sHead = (float) RabbitUtils.parseDoubleSafe(this.fieldScaleHead.getText(), 1.0D);
             float sEar = (float) RabbitUtils.parseDoubleSafe(this.fieldScaleEar.getText(), 1.0D);
@@ -439,7 +473,7 @@ public class GuiRabbitSettings extends GuiScreen {
                     this.pickerEar.getR(), this.pickerEar.getG(), this.pickerEar.getB(), this.pickerEar.getA(),
                     this.pickerEye.getR(), this.pickerEye.getG(), this.pickerEye.getB(), this.pickerEye.getA(),
                     this.pickerTail.getR(), this.pickerTail.getG(), this.pickerTail.getB(), this.pickerTail.getA(),
-                    this.ticksOpen, this.previewPose);
+                    this.ticksOpen, this.previewPose, this.previewBgIndex);
         }
     }
 

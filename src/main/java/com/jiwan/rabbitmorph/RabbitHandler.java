@@ -80,6 +80,11 @@ public class RabbitHandler {
                 float targetHeight = 0.5F * overallScale;
                 RabbitUtils.setEntitySize(event.player, targetWidth, targetHeight);
                 event.player.eyeHeight = 0.45F * overallScale;
+            } else {
+                if (event.player.width != 0.6F || event.player.height != 1.8F) {
+                    RabbitUtils.setEntitySize(event.player, 0.6F, 1.8F);
+                    event.player.eyeHeight = event.player.getDefaultEyeHeight();
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ public class RabbitData implements IExtendedEntityProperties {
     public static final String PROP_NAME = "RabbitMorphData";
 
     private boolean rabbit = false;
+    private boolean glowing = false;
     private String type = RabbitConfig.TYPE_NORMAL;
     private double health = RabbitConfig.DEFAULT_HEALTH;
     private double speed = RabbitConfig.DEFAULT_SPEED;
@@ -39,6 +40,7 @@ public class RabbitData implements IExtendedEntityProperties {
 
     public static class RabbitDataHolder {
         public boolean rabbit;
+        public boolean glowing;
         public String type = RabbitConfig.TYPE_NORMAL;
         public double health = RabbitConfig.DEFAULT_HEALTH;
         public double speed = RabbitConfig.DEFAULT_SPEED;
@@ -73,6 +75,7 @@ public class RabbitData implements IExtendedEntityProperties {
     public void saveNBTData(NBTTagCompound compound) {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setBoolean("IsRabbit", this.rabbit);
+        tag.setBoolean("IsGlowing", this.glowing);
         tag.setString("Type", this.type != null ? this.type : RabbitConfig.TYPE_NORMAL);
         tag.setDouble("Health", this.health);
         tag.setDouble("Speed", this.speed);
@@ -99,6 +102,7 @@ public class RabbitData implements IExtendedEntityProperties {
         if (compound.hasKey(PROP_NAME)) {
             NBTTagCompound tag = compound.getCompoundTag(PROP_NAME);
             this.rabbit = tag.getBoolean("IsRabbit");
+            this.glowing = tag.getBoolean("IsGlowing");
             this.type = tag.getString("Type");
             this.health = tag.getDouble("Health");
             this.speed = tag.getDouble("Speed");
@@ -145,6 +149,25 @@ public class RabbitData implements IExtendedEntityProperties {
         if (player != null) {
             RabbitDataHolder holder = getOrCreateCache(player.getUniqueID());
             holder.rabbit = isRabbit;
+        }
+    }
+
+    public static boolean isGlowing(EntityPlayer player) {
+        RabbitData data = get(player);
+        if (data != null) return data.glowing;
+        if (player != null) {
+            RabbitDataHolder holder = CLIENT_CACHE.get(player.getUniqueID());
+            if (holder != null) return holder.glowing;
+        }
+        return false;
+    }
+
+    public static void setGlowing(EntityPlayer player, boolean isGlowing) {
+        RabbitData data = get(player);
+        if (data != null) data.glowing = isGlowing;
+        if (player != null) {
+            RabbitDataHolder holder = getOrCreateCache(player.getUniqueID());
+            holder.glowing = isGlowing;
         }
     }
 
@@ -211,7 +234,6 @@ public class RabbitData implements IExtendedEntityProperties {
         if (data != null) data.fallDamage = RabbitUtils.clampDouble(fall, 0.0D, 10.0D, RabbitConfig.DEFAULT_FALL);
     }
 
-    // Scales API
     public static float getScale(EntityPlayer player, String part) {
         RabbitData data = get(player);
         if (data != null) {
@@ -258,11 +280,8 @@ public class RabbitData implements IExtendedEntityProperties {
         }
     }
 
-    // RGBA Color API
     public static int color(EntityPlayer player, String part, String channel) {
         RabbitData data = get(player);
-        int defaultR = 255, defaultG = 255, defaultB = 255, defaultA = 255;
-
         if (data != null) {
             if ("body".equalsIgnoreCase(part)) {
                 if ("R".equalsIgnoreCase(channel)) return data.bodyR;
@@ -344,7 +363,7 @@ public class RabbitData implements IExtendedEntityProperties {
         return holder;
     }
 
-    public static void syncClientCache(UUID uuid, boolean isRabbit, String type, double health, double speed, double jump, double fall,
+    public static void syncClientCache(UUID uuid, boolean isRabbit, boolean isGlowing, String type, double health, double speed, double jump, double fall,
                                        float scaleOverall, float scaleHead, float scaleEar, float scaleBody, float scaleLegs, float scaleTail,
                                        int bodyR, int bodyG, int bodyB, int bodyA,
                                        int earR, int earG, int earB, int earA,
@@ -352,6 +371,7 @@ public class RabbitData implements IExtendedEntityProperties {
                                        int tailR, int tailG, int tailB, int tailA) {
         RabbitDataHolder holder = getOrCreateCache(uuid);
         holder.rabbit = isRabbit;
+        holder.glowing = isGlowing;
         holder.type = type;
         holder.health = health;
         holder.speed = speed;

@@ -21,8 +21,9 @@ build
 eclipse
 run
 
-# .build 폴더와 그 파일들을 모두 무시
+# .build, .gradle_home 폴더와 그 파일들을 모두 무시
 .build/
+.gradle_home/
 
 # .log 무시
 *.log

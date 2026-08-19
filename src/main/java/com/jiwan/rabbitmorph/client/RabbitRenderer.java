@@ -2,9 +2,11 @@ package com.jiwan.rabbitmorph.client;
 
 import com.jiwan.rabbitmorph.RabbitData;
 import com.jiwan.rabbitmorph.RabbitTransform;
+import com.jiwan.rabbitmorph.RabbitUtils;
 import com.jiwan.rabbitmorph.model.ModelRabbitPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -24,7 +26,10 @@ public class RabbitRenderer {
         EntityPlayer player = event.entityPlayer;
         if (player == null) return;
 
-        if (!RabbitData.isRabbit(player)) return;
+        if (!RabbitData.isRabbit(player)) {
+            RabbitUtils.setRenderShadowSize(event.renderer, 0.5F);
+            return;
+        }
 
         event.setCanceled(true);
 
@@ -48,14 +53,27 @@ public class RabbitRenderer {
 
         float overallScale = RabbitData.getScale(player, "overall");
 
+        // Automatically scale entity shadow size based on rabbit scale!
+        RabbitUtils.setRenderShadowSize(event.renderer, 0.3F * scaleFactor * overallScale);
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, z);
         GlStateManager.rotate(180.0F - renderYaw, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
         float rabbitScale = 0.65F * scaleFactor * overallScale;
         GlStateManager.scale(rabbitScale, rabbitScale, rabbitScale);
         GlStateManager.translate(0.0F, -1.5F, 0.0F);
+
+        // Glowing (Emissive / Fullbright) effect
+        boolean isGlowing = RabbitData.isGlowing(player);
+        float lastLightX = OpenGlHelper.lastBrightnessX;
+        float lastLightY = OpenGlHelper.lastBrightnessY;
+
+        if (isGlowing) {
+            GlStateManager.disableLighting();
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
+        }
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(RABBIT_TEXTURE);
 
@@ -73,6 +91,11 @@ public class RabbitRenderer {
         this.rabbitModel.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, headYaw, rotationPitch, 0.0625F, player);
         this.rabbitModel.renderColoredDetailed(0.0625F, sHead, sEar, sBody, sLegs, sTail,
                 bR, bG, bB, bA, eR, eG, eB, eA, eyR, eyG, eyB, eyA, tR, tG, tB, tA);
+
+        if (isGlowing) {
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastLightX, lastLightY);
+            GlStateManager.enableLighting();
+        }
 
         GlStateManager.popMatrix();
     }

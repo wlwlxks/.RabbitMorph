@@ -15,6 +15,7 @@ public class PacketSyncRabbitData implements IMessage {
 
     private UUID playerUUID;
     private boolean isRabbit;
+    private boolean isGlowing;
     private String type;
     private double health, speed, jump, fall;
     private float scaleOverall, scaleHead, scaleEar, scaleBody, scaleLegs, scaleTail;
@@ -29,6 +30,7 @@ public class PacketSyncRabbitData implements IMessage {
         PacketSyncRabbitData pkt = new PacketSyncRabbitData();
         pkt.playerUUID = player.getUniqueID();
         pkt.isRabbit = RabbitData.isRabbit(player);
+        pkt.isGlowing = RabbitData.isGlowing(player);
         pkt.type = RabbitData.getType(player);
         pkt.health = RabbitData.getHealth(player);
         pkt.speed = RabbitData.getSpeed(player);
@@ -56,6 +58,7 @@ public class PacketSyncRabbitData implements IMessage {
         long least = buf.readLong();
         this.playerUUID = new UUID(most, least);
         this.isRabbit = buf.readBoolean();
+        this.isGlowing = buf.readBoolean();
         this.type = ByteBufUtils.readUTF8String(buf);
         this.health = buf.readDouble(); this.speed = buf.readDouble(); this.jump = buf.readDouble(); this.fall = buf.readDouble();
         this.scaleOverall = buf.readFloat(); this.scaleHead = buf.readFloat(); this.scaleEar = buf.readFloat();
@@ -71,6 +74,7 @@ public class PacketSyncRabbitData implements IMessage {
         buf.writeLong(this.playerUUID.getMostSignificantBits());
         buf.writeLong(this.playerUUID.getLeastSignificantBits());
         buf.writeBoolean(this.isRabbit);
+        buf.writeBoolean(this.isGlowing);
         ByteBufUtils.writeUTF8String(buf, this.type != null ? this.type : "");
         buf.writeDouble(this.health); buf.writeDouble(this.speed); buf.writeDouble(this.jump); buf.writeDouble(this.fall);
         buf.writeFloat(this.scaleOverall); buf.writeFloat(this.scaleHead); buf.writeFloat(this.scaleEar);
@@ -90,7 +94,7 @@ public class PacketSyncRabbitData implements IMessage {
                     EntityPlayer clientPlayer = Minecraft.getMinecraft().theWorld != null ?
                             Minecraft.getMinecraft().theWorld.getPlayerEntityByUUID(message.playerUUID) : null;
 
-                    RabbitData.syncClientCache(message.playerUUID, message.isRabbit, message.type,
+                    RabbitData.syncClientCache(message.playerUUID, message.isRabbit, message.isGlowing, message.type,
                             message.health, message.speed, message.jump, message.fall,
                             message.scaleOverall, message.scaleHead, message.scaleEar, message.scaleBody, message.scaleLegs, message.scaleTail,
                             message.bodyR, message.bodyG, message.bodyB, message.bodyA,
@@ -100,6 +104,7 @@ public class PacketSyncRabbitData implements IMessage {
 
                     if (clientPlayer != null) {
                         RabbitData.setRabbit(clientPlayer, message.isRabbit);
+                        RabbitData.setGlowing(clientPlayer, message.isGlowing);
                         RabbitData.setType(clientPlayer, message.type);
                         RabbitData.setHealth(clientPlayer, message.health);
                         RabbitData.setSpeed(clientPlayer, message.speed);

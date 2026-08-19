@@ -16,9 +16,13 @@ public class GuiRabbitColorPicker {
 
     private final int startX;
     private final int startY;
-    private static final int SLIDER_W = 32;
+
+    private static final int FIELD_W = 15;
+    private static final int FIELD_H = 11;
+    private static final int SLIDER_W = 22;
     private static final int SLIDER_H = 8;
-    private static final int CHANNEL_SPACING = 55;
+    private static final int CHANNEL_OFFSET_X = 42;
+    private static final int CHANNEL_SPACING = 47;
 
     private int activeSlider = -1; // 0=R, 1=G, 2=B, 3=A, -1=None
 
@@ -31,18 +35,20 @@ public class GuiRabbitColorPicker {
         this.b = RabbitUtils.clampColor(initB);
         this.a = RabbitUtils.clampColor(initA);
 
-        int fieldWidth = 18;
-        int fieldHeight = 12;
-
-        this.fieldR = new GuiTextField(10, font, x + 50, y, fieldWidth, fieldHeight);
-        this.fieldG = new GuiTextField(11, font, x + 50 + CHANNEL_SPACING, y, fieldWidth, fieldHeight);
-        this.fieldB = new GuiTextField(12, font, x + 50 + CHANNEL_SPACING * 2, y, fieldWidth, fieldHeight);
-        this.fieldA = new GuiTextField(13, font, x + 50 + CHANNEL_SPACING * 3, y, fieldWidth, fieldHeight);
+        this.fieldR = new GuiTextField(10, font, x + CHANNEL_OFFSET_X, y, FIELD_W, FIELD_H);
+        this.fieldG = new GuiTextField(11, font, x + CHANNEL_OFFSET_X + CHANNEL_SPACING, y, FIELD_W, FIELD_H);
+        this.fieldB = new GuiTextField(12, font, x + CHANNEL_OFFSET_X + CHANNEL_SPACING * 2, y, FIELD_W, FIELD_H);
+        this.fieldA = new GuiTextField(13, font, x + CHANNEL_OFFSET_X + CHANNEL_SPACING * 3, y, FIELD_W, FIELD_H);
 
         this.fieldR.setMaxStringLength(3);
         this.fieldG.setMaxStringLength(3);
         this.fieldB.setMaxStringLength(3);
         this.fieldA.setMaxStringLength(3);
+
+        this.fieldR.setEnableBackgroundDrawing(true);
+        this.fieldG.setEnableBackgroundDrawing(true);
+        this.fieldB.setEnableBackgroundDrawing(true);
+        this.fieldA.setEnableBackgroundDrawing(true);
 
         this.fieldR.setText(String.valueOf(this.r));
         this.fieldG.setText(String.valueOf(this.g));
@@ -51,18 +57,24 @@ public class GuiRabbitColorPicker {
     }
 
     public void draw(FontRenderer font, int mouseX, int mouseY) {
-        font.drawString(label, startX, startY + 2, 0xFFFFFF);
+        font.drawString(label, startX, startY + 2, 0xEEEEEE);
 
         this.fieldR.drawTextBox();
         this.fieldG.drawTextBox();
         this.fieldB.drawTextBox();
         this.fieldA.drawTextBox();
 
-        // Draw Sliders spaced cleanly
-        drawChannelSlider(startX + 70, startY + 2, this.r, 0xFF4444);
-        drawChannelSlider(startX + 70 + CHANNEL_SPACING, startY + 2, this.g, 0x44FF44);
-        drawChannelSlider(startX + 70 + CHANNEL_SPACING * 2, startY + 2, this.b, 0x4444FF);
-        drawChannelSlider(startX + 70 + CHANNEL_SPACING * 3, startY + 2, this.a, 0xAAAAAA);
+        // Draw Sliders neatly
+        drawChannelSlider(startX + CHANNEL_OFFSET_X + FIELD_W + 2, startY + 2, this.r, 0xFF5555);
+        drawChannelSlider(startX + CHANNEL_OFFSET_X + CHANNEL_SPACING + FIELD_W + 2, startY + 2, this.g, 0x55FF55);
+        drawChannelSlider(startX + CHANNEL_OFFSET_X + CHANNEL_SPACING * 2 + FIELD_W + 2, startY + 2, this.b, 0x5555FF);
+        drawChannelSlider(startX + CHANNEL_OFFSET_X + CHANNEL_SPACING * 3 + FIELD_W + 2, startY + 2, this.a, 0xAAAAAA);
+
+        // Color preview swatch box
+        int swatchX = startX + CHANNEL_OFFSET_X + CHANNEL_SPACING * 3 + FIELD_W + SLIDER_W + 5;
+        int colorInt = ((this.a & 0xFF) << 24) | ((this.r & 0xFF) << 16) | ((this.g & 0xFF) << 8) | (this.b & 0xFF);
+        Gui.drawRect(swatchX, startY, swatchX + 8, startY + FIELD_H, 0xFF000000);
+        Gui.drawRect(swatchX + 1, startY + 1, swatchX + 7, startY + FIELD_H - 1, colorInt);
 
         if (this.activeSlider != -1) {
             updateSliderDrag(mouseX);
@@ -74,14 +86,14 @@ public class GuiRabbitColorPicker {
         int fillW = (int) (((float) value / 255.0F) * SLIDER_W);
         Gui.drawRect(x, y, x + fillW, y + SLIDER_H, 0xFF000000 | color);
 
-        int handleX = x + fillW - 2;
+        int handleX = x + fillW - 1;
         if (handleX < x) handleX = x;
-        if (handleX > x + SLIDER_W - 3) handleX = x + SLIDER_W - 3;
-        Gui.drawRect(handleX, y - 1, handleX + 3, y + SLIDER_H + 1, 0xFFFFFFFF);
+        if (handleX > x + SLIDER_W - 2) handleX = x + SLIDER_W - 2;
+        Gui.drawRect(handleX, y - 1, handleX + 2, y + SLIDER_H + 1, 0xFFFFFFFF);
     }
 
     private void updateSliderDrag(int mouseX) {
-        int sliderX = startX + 70 + (this.activeSlider * CHANNEL_SPACING);
+        int sliderX = startX + CHANNEL_OFFSET_X + (this.activeSlider * CHANNEL_SPACING) + FIELD_W + 2;
         float pct = (float) (mouseX - sliderX) / (float) SLIDER_W;
         if (pct < 0.0F) pct = 0.0F;
         if (pct > 1.0F) pct = 1.0F;
@@ -113,7 +125,7 @@ public class GuiRabbitColorPicker {
 
         if (mouseButton == 0) {
             for (int i = 0; i < 4; i++) {
-                int sliderX = startX + 70 + (i * CHANNEL_SPACING);
+                int sliderX = startX + CHANNEL_OFFSET_X + (i * CHANNEL_SPACING) + FIELD_W + 2;
                 if (isInsideSlider(mouseX, mouseY, sliderX, startY + 2)) {
                     this.activeSlider = i;
                     updateSliderDrag(mouseX);
@@ -130,7 +142,7 @@ public class GuiRabbitColorPicker {
     }
 
     private boolean isInsideSlider(int mouseX, int mouseY, int x, int y) {
-        return mouseX >= x - 2 && mouseX <= x + SLIDER_W + 2 && mouseY >= y - 2 && mouseY <= y + SLIDER_H + 2;
+        return mouseX >= x - 2 && mouseX <= x + SLIDER_W + 2 && mouseY >= y - 1 && mouseY <= y + SLIDER_H + 1;
     }
 
     public void setRGBA(int r, int g, int b, int a) {

@@ -75,6 +75,15 @@ public class RabbitUtils {
         return closestPlayer;
     }
 
+    public static void setRenderShadowSize(net.minecraft.client.renderer.entity.RenderPlayer renderer, float shadowSize) {
+        if (renderer == null) return;
+        try {
+            net.minecraftforge.fml.relauncher.ReflectionHelper.setPrivateValue(
+                    net.minecraft.client.renderer.entity.Render.class, renderer, shadowSize, "shadowSize", "field_76989_e");
+        } catch (Exception ignored) {
+        }
+    }
+
     public static void setEntitySize(Entity entity, float width, float height) {
         if (entity == null) return;
         try {
