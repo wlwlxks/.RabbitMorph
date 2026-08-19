@@ -1,12 +1,13 @@
 package com.jiwan.rabbitmorph.gui;
 
 import com.jiwan.rabbitmorph.RabbitConfig;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiSlot;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Mouse;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,11 +20,15 @@ public class GuiLoadConfigDialog extends GuiScreen {
 
     private final GuiRabbitSettings parentScreen;
     private List<File> configFileSlots;
-    private ConfigListSlot listSlot;
     private int selectedIndex = -1;
+    private int scrollOffset = 0;
+    private long lastClickTime = 0L;
 
     private GuiButton btnLoad;
     private GuiButton btnDelete;
+
+    private static final int ITEM_H = 22;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     public GuiLoadConfigDialog(GuiRabbitSettings parent) {
         this.parentScreen = parent;
@@ -38,8 +43,6 @@ public class GuiLoadConfigDialog extends GuiScreen {
         int dialogH = 180;
         int dialogX = (this.width - dialogW) / 2;
         int dialogY = (this.height - dialogH) / 2;
-
-        this.listSlot = new ConfigListSlot(dialogX + 10, dialogY + 28, dialogW - 20, dialogH - 60);
 
         this.btnLoad = new GuiButton(1, dialogX + 15, dialogY + dialogH - 24, 75, 16, "Load");
         this.btnDelete = new GuiButton(2, dialogX + 100, dialogY + dialogH - 24, 75, 16, "Delete");
@@ -61,8 +64,52 @@ public class GuiLoadConfigDialog extends GuiScreen {
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
-        if (this.listSlot != null) {
-            this.listSlot.handleMouseInput();
+
+        int dialogW = 280;
+        int dialogH = 180;
+        int dialogX = (this.width - dialogW) / 2;
+        int dialogY = (this.height - dialogH) / 2;
+
+        int listH = dialogH - 58;
+        int maxVisible = listH / ITEM_H;
+
+        int dWheel = Mouse.getEventDWheel();
+        if (dWheel != 0) {
+            int maxScroll = Math.max(0, configFileSlots.size() - maxVisible);
+            if (dWheel > 0 && scrollOffset > 0) {
+                scrollOffset--;
+            } else if (dWheel < 0 && scrollOffset < maxScroll) {
+                scrollOffset++;
+            }
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        int dialogW = 280;
+        int dialogH = 180;
+        int dialogX = (this.width - dialogW) / 2;
+        int dialogY = (this.height - dialogH) / 2;
+
+        int listX = dialogX + 10;
+        int listY = dialogY + 28;
+        int listW = dialogW - 20;
+        int listH = dialogH - 58;
+
+        if (mouseButton == 0 && mouseX >= listX && mouseX <= listX + listW && mouseY >= listY && mouseY <= listY + listH) {
+            int clickedIdx = scrollOffset + (mouseY - listY) / ITEM_H;
+            if (clickedIdx >= 0 && clickedIdx < configFileSlots.size()) {
+                long now = Minecraft.getSystemTime();
+                if (clickedIdx == selectedIndex && (now - lastClickTime < 400)) { // Double click to load
+                    actionPerformed(btnLoad);
+                    return;
+                }
+                selectedIndex = clickedIdx;
+                lastClickTime = now;
+                updateButtonState();
+            }
         }
     }
 
@@ -80,6 +127,7 @@ public class GuiLoadConfigDialog extends GuiScreen {
             RabbitConfig.deleteJsonConfig(file);
             this.configFileSlots = RabbitConfig.listSavedJsonConfigs();
             this.selectedIndex = -1;
+            this.scrollOffset = 0;
             updateButtonState();
         } else if (button.id == 3) { // Cancel
             this.mc.displayGuiScreen(parentScreen);
@@ -111,8 +159,55 @@ public class GuiLoadConfigDialog extends GuiScreen {
 
         this.fontRendererObj.drawStringWithShadow("Select Config File to Load", dialogX + 15, dialogY + 10, 0xFFFF55);
 
-        if (this.listSlot != null) {
-            this.listSlot.drawScreen(mouseX, mouseY, partialTicks);
+        // Render List Box inside dialog bounds
+        int listX = dialogX + 10;
+        int listY = dialogY + 26;
+        int listW = dialogW - 20;
+        int listH = dialogH - 56;
+
+        drawRect(listX, listY, listX + listW, listY + listH, 0xFF0D0D12);
+        drawRect(listX, listY, listX + listW, listY + 1, 0xFF334455);
+        drawRect(listX, listY + listH - 1, listX + listW, listY + listH, 0xFF334455);
+        drawRect(listX, listY, listX + 1, listY + listH, 0xFF334455);
+        drawRect(listX + listW - 1, listY, listX + listW, listY + listH, 0xFF334455);
+
+        int maxVisible = listH / ITEM_H;
+
+        if (configFileSlots.isEmpty()) {
+            this.fontRendererObj.drawString("No saved config files found.", listX + 10, listY + 20, 0x888888);
+        } else {
+            for (int i = 0; i < maxVisible; i++) {
+                int index = scrollOffset + i;
+                if (index >= configFileSlots.size()) break;
+
+                File file = configFileSlots.get(index);
+                int itemY = listY + 2 + (i * ITEM_H);
+
+                boolean isSelected = (index == selectedIndex);
+                if (isSelected) {
+                    drawRect(listX + 2, itemY, listX + listW - 8, itemY + ITEM_H - 2, 0xFF2A3B55);
+                    drawRect(listX + 2, itemY, listX + listW - 8, itemY + 1, 0xFF5588FF);
+                    drawRect(listX + 2, itemY + ITEM_H - 3, listX + listW - 8, itemY + ITEM_H - 2, 0xFF5588FF);
+                }
+
+                String name = file.getName();
+                String dateStr = dateFormat.format(new Date(file.lastModified()));
+
+                this.fontRendererObj.drawString(name, listX + 8, itemY + 2, isSelected ? 0xFFFF55 : 0xEEEEEE);
+                this.fontRendererObj.drawString(dateStr, listX + listW - 110, itemY + 2, 0x888888);
+            }
+
+            // Scrollbar
+            if (configFileSlots.size() > maxVisible) {
+                int sbX = listX + listW - 6;
+                int sbH = listH - 4;
+                int handleH = Math.max(10, sbH * maxVisible / configFileSlots.size());
+                int maxScroll = configFileSlots.size() - maxVisible;
+                int handleY = listY + 2 + ((sbH - handleH) * scrollOffset / maxScroll);
+
+                drawRect(sbX, listY + 2, sbX + 4, listY + 2 + sbH, 0xFF1A1A24);
+                drawRect(sbX, handleY, sbX + 4, handleY + handleH, 0xFF5588FF);
+            }
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -121,57 +216,5 @@ public class GuiLoadConfigDialog extends GuiScreen {
     @Override
     public boolean doesGuiPauseGame() {
         return false;
-    }
-
-    // Scrollable File List Slot
-    class ConfigListSlot extends GuiSlot {
-
-        private final int slotX, slotW;
-        private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-        public ConfigListSlot(int x, int y, int width, int height) {
-            super(GuiLoadConfigDialog.this.mc, width, height, y, y + height, 22);
-            this.slotX = x;
-            this.slotW = width;
-        }
-
-        @Override
-        protected int getSize() {
-            return configFileSlots.size();
-        }
-
-        @Override
-        protected void elementClicked(int slotIndex, boolean isDoubleClick, int mouseX, int mouseY) {
-            selectedIndex = slotIndex;
-            updateButtonState();
-            if (isDoubleClick) {
-                try {
-                    actionPerformed(btnLoad);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        @Override
-        protected boolean isSelected(int slotIndex) {
-            return slotIndex == selectedIndex;
-        }
-
-        @Override
-        protected void drawBackground() {}
-
-        @Override
-        protected void drawSlot(int entryID, int p_180791_2_, int p_180791_3_, int p_180791_4_, int mouseX, int mouseY) {
-            if (entryID >= 0 && entryID < configFileSlots.size()) {
-                File file = configFileSlots.get(entryID);
-                String name = file.getName();
-                String dateStr = dateFormat.format(new Date(file.lastModified()));
-
-                int color = entryID == selectedIndex ? 0xFFFF55 : 0xFFFFFF;
-                fontRendererObj.drawString(name, p_180791_2_ + 5, p_180791_3_ + 2, color);
-                fontRendererObj.drawString(dateStr, p_180791_2_ + 5, p_180791_3_ + 12, 0x888888);
-            }
-        }
     }
 }
